@@ -1,0 +1,443 @@
+/* ═══════════════════════════════════════════════════
+   Light Modal — White + Blue Accent
+   ═══════════════════════════════════════════════════ */
+.mp-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0s 0.35s; /* delay hide until animation completes */
+}
+
+.mp-modal.is-open {
+    visibility: visible;
+    pointer-events: auto;
+    transition: visibility 0s 0s; /* show immediately */
+}
+
+.mp-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mp-modal.is-open .mp-modal__backdrop {
+    opacity: 1;
+}
+
+.mp-modal__sheet {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12),
+                0 8px 24px rgba(0, 0, 0, 0.06);
+    color: #1e293b;
+    transform: scale(0.95) translateY(10px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.25s ease;
+}
+
+.mp-modal.is-open .mp-modal__sheet {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.mp-modal__drag-handle {
+    display: none; /* visible only on mobile */
+}
+
+/* ─── Modal Header ───────────────────────────────── */
+.mp-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.mp-modal__platform-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.mp-modal__platform-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: var(--mp-modal-accent, #06b6d4);
+    flex-shrink: 0;
+}
+
+.mp-modal__platform-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.mp-modal__title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.mp-modal__subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin: 2px 0 0;
+}
+
+.mp-modal__close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 10px;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mp-modal__close svg {
+    width: 18px;
+    height: 18px;
+}
+
+.mp-modal__close:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+/* ─── Modal Body (Form) ──────────────────────────── */
+.mp-modal__body {
+    padding: 20px 24px 24px;
+}
+
+.mp-form-group {
+    margin-bottom: 20px;
+}
+
+.mp-form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.mp-form-opt {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.mp-form-req {
+    color: #f87171;
+}
+
+.mp-form-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    color: #1e293b;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.mp-form-input::placeholder {
+    color: #94a3b8;
+}
+
+.mp-form-input:focus {
+    outline: none;
+    border-color: var(--mp-modal-accent, #06b6d4);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--mp-modal-accent, #06b6d4) 15%, transparent);
+}
+
+.mp-form-hint {
+    font-size: 12px;
+    color: #64748b;
+    margin: 6px 0 0;
+}
+
+/* ─── Event Pills ────────────────────────────────── */
+.mp-form-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mp-pill {
+    cursor: pointer;
+    display: inline-flex;
+}
+
+.mp-pill input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.mp-pill__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+    background: #f8fafc;
+    transition: all 0.25s ease;
+    user-select: none;
+}
+
+.mp-pill__icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.mp-pill input:checked + .mp-pill__label {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+
+.mp-pill__label:hover {
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+/* ─── Modal Actions ──────────────────────────────── */
+.mp-modal__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 4px;
+}
+
+/* Card Builder modal — full padding for bottom spacing */
+#mp-card-builder-modal .mp-modal__actions {
+    padding: 20px;
+}
+
+.mp-modal__actions-right {
+    display: flex;
+    gap: 8px;
+}
+
+/* ─── Modal Buttons ──────────────────────────────── */
+.mp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+.mp-btn--primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.mp-btn--primary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.mp-btn--primary:hover::after {
+    left: 100%;
+}
+
+.mp-btn--primary:hover {
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px);
+}
+
+.mp-btn--primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.mp-btn--ghost {
+    background: none;
+    color: #64748b;
+    border: none;
+    padding: 10px 16px;
+}
+
+.mp-btn--ghost:hover {
+    color: #1e293b;
+    background: #f1f5f9;
+}
+
+.mp-btn--outline {
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.mp-btn--outline:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.mp-btn--outline-danger {
+    background: rgba(239, 68, 68, 0.08);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.mp-btn--outline-danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.mp-btn.is-loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════
+   Responsive — Mobile Bottom Sheet
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .mp-conn-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 12px;
+    }
+
+    .mp-conn-card {
+        padding: 16px;
+    }
+
+    /* Bottom sheet modal */
+    .mp-modal.is-open {
+        align-items: flex-end;
+    }
+
+    .mp-modal__sheet {
+        max-width: 100%;
+        max-height: 85vh;
+        border-radius: 20px 20px 0 0;
+        transform: translateY(100%);
+    }
+
+    .mp-modal.is-open .mp-modal__sheet {
+        transform: translateY(0);
+    }
+
+    .mp-modal__drag-handle {
+        display: flex;
+        justify-content: center;
+        padding: 12px 0 4px;
+    }
+
+    .mp-modal__drag-handle span {
+        width: 40px;
+        height: 4px;
+        background: #cbd5e1;
+        border-radius: 2px;
+    }
+
+    .mp-modal__header {
+        padding: 12px 20px 14px;
+    }
+
+    .mp-modal__body {
+        padding: 16px 20px 20px;
+    }
+
+    .mp-modal__actions {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+
+    .mp-modal__actions-right {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .mp-btn {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
+    }
+
+    .mp-btn--ghost {
+        width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .mp-conn-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mp-conn-card__logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .mp-conn-card__logo svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Spinner for test button */
+@keyframes mp-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}

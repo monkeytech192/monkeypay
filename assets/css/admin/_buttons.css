@@ -1,0 +1,86 @@
+/* ═══════════════════════════════════════════════════
+   Buttons (MonkeyPOS Standard)
+   ═══════════════════════════════════════════════════ */
+.monkeypay-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--mp-space-2);
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--mp-font);
+    color: var(--mp-text-secondary);
+    background: var(--mp-bg);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-lg);
+    cursor: pointer;
+    transition: var(--mp-transition);
+    line-height: 1;
+}
+
+.monkeypay-btn:hover {
+    border-color: var(--mp-primary);
+    color: var(--mp-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--mp-shadow-sm);
+}
+
+.monkeypay-btn:active {
+    transform: translateY(0);
+}
+
+.monkeypay-btn--primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--mp-primary), var(--mp-primary-dark));
+    border-color: transparent;
+    box-shadow: var(--mp-shadow-primary);
+}
+
+.monkeypay-btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+    color: #fff;
+}
+
+.monkeypay-btn--sm {
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: var(--mp-radius-md);
+}
+
+.monkeypay-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.monkeypay-btn-copy {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--mp-text-muted);
+    transition: var(--mp-transition);
+    display: inline-flex;
+    align-items: center;
+}
+
+.monkeypay-btn-copy:hover {
+    color: var(--mp-primary);
+    transform: scale(1.08);
+}
+
+.monkeypay-btn-copy svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}

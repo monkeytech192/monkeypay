@@ -1,0 +1,31 @@
+# Documentation (internal only)
+docs/
+
+# Agent configuration
+.agent/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies (if any)
+node_modules/
+vendor/
+
+# Logs
+*.log
+
+# Test artifacts
+probe-result.txt
+test-result.txt
+tx-test.txt
+
+# Error tracking (local only)
+ERRORS.md
+
+# Agent identity (local only)
+GEMINI.md

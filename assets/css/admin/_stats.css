@@ -1,0 +1,41 @@
+/* ═══════════════════════════════════════════════════
+   Status Grid (Dashboard Stats)
+   ═══════════════════════════════════════════════════ */
+.monkeypay-status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--mp-space-4);
+}
+
+.monkeypay-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--mp-space-4);
+    background: var(--mp-bg);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-lg);
+    transition: var(--mp-transition);
+}
+
+.monkeypay-stat:hover {
+    border-color: rgba(6, 182, 212, 0.2);
+    background: rgba(6, 182, 212, 0.03);
+    transform: translateY(-2px);
+    box-shadow: var(--mp-shadow-sm);
+}
+
+.monkeypay-stat__label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--mp-text-muted);
+    margin-bottom: var(--mp-space-1);
+}
+
+.monkeypay-stat__value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--mp-text);
+}

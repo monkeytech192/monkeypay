@@ -1,0 +1,837 @@
+/* ═══════════════════════════════════════════════════
+   Connections Page — Webhook Management
+   ═══════════════════════════════════════════════════ */
+
+/* Page header */
+.monkeypay-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--mp-space-5, 24px);
+    gap: 16px;
+}
+.monkeypay-page-title {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--mp-text);
+    margin: 0 0 4px;
+}
+.monkeypay-page-desc {
+    color: var(--mp-text-secondary);
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Buttons */
+.monkeypay-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+.monkeypay-btn:active {
+    transform: scale(0.97);
+}
+.monkeypay-btn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.monkeypay-btn-primary {
+    background: linear-gradient(135deg, var(--mp-primary), var(--mp-primary-dark));
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+}
+.monkeypay-btn-primary:hover {
+    box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
+    transform: translateY(-1px);
+}
+
+.monkeypay-btn-outline {
+    background: var(--mp-bg-surface, #fff);
+    color: var(--mp-text);
+    border: 1.5px solid var(--mp-border, #e2e8f0);
+}
+.monkeypay-btn-outline:hover {
+    background: var(--mp-bg, #f8fafc);
+    border-color: var(--mp-primary);
+    color: var(--mp-primary);
+}
+
+.monkeypay-btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+}
+
+.monkeypay-btn-danger {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1.5px solid #fecaca;
+}
+.monkeypay-btn-danger:hover {
+    background: #fecaca;
+}
+
+/* Empty State */
+.monkeypay-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--mp-text-muted);
+}
+.monkeypay-empty-state h3 {
+    margin: 0 0 8px;
+    color: var(--mp-text);
+    font-size: 16px;
+}
+.monkeypay-empty-state p {
+    margin: 0;
+    font-size: 14px;
+    max-width: 380px;
+    margin-inline: auto;
+}
+
+/* Connection Cards Grid */
+.monkeypay-connections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+}
+
+.monkeypay-connection-card {
+    background: var(--mp-bg-card, rgba(255,255,255,0.7));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1.5px solid var(--mp-border, rgba(0,0,0,0.08));
+    border-radius: var(--mp-radius, 12px);
+    overflow: hidden;
+    transition: all 0.25s ease;
+}
+.monkeypay-connection-card:hover {
+    border-color: var(--mp-primary-200, #a5f3fc);
+    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.08);
+    transform: translateY(-2px);
+}
+.monkeypay-connection-card.disabled {
+    opacity: 0.65;
+}
+
+.monkeypay-connection-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 16px 0;
+}
+.monkeypay-connection-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.monkeypay-connection-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.monkeypay-connection-info {
+    flex: 1;
+    min-width: 0;
+}
+.monkeypay-connection-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--mp-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.monkeypay-connection-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+/* Badge */
+.monkeypay-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+.monkeypay-badge-success {
+    background: #dcfce7;
+    color: #15803d;
+}
+.monkeypay-badge-gray {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.monkeypay-connection-platform-tag {
+    font-size: 11px;
+    color: var(--mp-text-muted);
+}
+
+.monkeypay-connection-body {
+    padding: 12px 16px 16px;
+}
+
+.monkeypay-connection-url {
+    font-size: 12px;
+    color: var(--mp-text-muted);
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 0 10px;
+    padding: 6px 10px;
+    background: var(--mp-bg, #f8fafc);
+    border-radius: 6px;
+    border: 1px solid var(--mp-border-light, #f1f5f9);
+}
+
+.monkeypay-connection-events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.monkeypay-event-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+.tag-receive {
+    background: #dcfce7;
+    color: #166534;
+}
+.tag-send {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.monkeypay-connection-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.monkeypay-connection-btns {
+    display: flex;
+    gap: 6px;
+}
+.monkeypay-connection-toggle-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+/* ─── Modal ──────────────────────────────────────── */
+
+.monkeypay-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.monkeypay-modal.is-opening,
+.monkeypay-modal.is-open {
+    display: flex;
+}
+
+/* Overlay with blur */
+.monkeypay-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.monkeypay-modal.is-open .monkeypay-modal-overlay {
+    opacity: 1;
+}
+.monkeypay-modal.is-closing .monkeypay-modal-overlay {
+    opacity: 0;
+}
+
+/* Content panel */
+.monkeypay-modal-content {
+    position: relative;
+    background: var(--mp-bg-surface, #fff);
+    border-radius: 20px;
+    width: 520px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    transform: translateY(24px) scale(0.96);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.monkeypay-modal.is-open .monkeypay-modal-content {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+.monkeypay-modal.is-closing .monkeypay-modal-content {
+    transform: translateY(16px) scale(0.98);
+    opacity: 0;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-in;
+}
+
+/* Scrollbar styling */
+.monkeypay-modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+.monkeypay-modal-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+.monkeypay-modal-content::-webkit-scrollbar-thumb {
+    background: var(--mp-border, #e2e8f0);
+    border-radius: 3px;
+}
+
+/* Header */
+.monkeypay-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 0;
+    position: sticky;
+    top: 0;
+    background: var(--mp-bg-surface, #fff);
+    z-index: 2;
+}
+.monkeypay-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--mp-text);
+}
+.monkeypay-modal-close {
+    background: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--mp-text-muted);
+    transition: all 0.15s;
+}
+.monkeypay-modal-close:hover {
+    background: var(--mp-bg, #f8fafc);
+    color: var(--mp-text);
+}
+
+/* Footer */
+.monkeypay-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px 24px;
+    position: sticky;
+    bottom: 0;
+    background: var(--mp-bg-surface, #fff);
+    border-top: 1px solid var(--mp-border-light, #f1f5f9);
+}
+
+/* ─── Form Fields ────────────────────────────────── */
+
+.monkeypay-form-group {
+    padding: 10px 24px;
+    position: relative;
+}
+.monkeypay-form-step {
+    display: inline-flex;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--mp-primary), var(--mp-primary-dark));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+.monkeypay-form-label {
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-block;
+    margin-bottom: 6px;
+    vertical-align: middle;
+    color: var(--mp-text);
+}
+.monkeypay-form-hint {
+    font-size: 12px;
+    color: var(--mp-text-muted);
+    margin: 0 0 6px;
+}
+.monkeypay-optional {
+    color: var(--mp-text-muted);
+    font-weight: 400;
+    font-size: 12px;
+}
+.monkeypay-required {
+    color: var(--mp-error, #ef4444);
+}
+
+.monkeypay-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--mp-border, #e2e8f0);
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    background: var(--mp-bg-input, rgba(255,255,255,0.8));
+    color: var(--mp-text);
+}
+.monkeypay-input:focus {
+    border-color: var(--mp-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.12);
+}
+.monkeypay-input::placeholder {
+    color: var(--mp-text-muted);
+}
+
+/* Platform selector */
+.monkeypay-platform-select {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.monkeypay-platform-option input {
+    display: none;
+}
+.monkeypay-platform-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1.5px solid var(--mp-border, #e2e8f0);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mp-text-secondary);
+}
+.monkeypay-platform-card:hover {
+    border-color: var(--mp-primary-200, #a5f3fc);
+}
+.monkeypay-platform-option input:checked + .monkeypay-platform-card {
+    border-color: var(--mp-primary);
+    background: var(--mp-primary-50, #ecfeff);
+    color: var(--mp-primary-dark);
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.08);
+}
+.monkeypay-platform-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+/* Event toggles */
+.monkeypay-event-toggles {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.monkeypay-event-option input {
+    display: none;
+}
+.monkeypay-event-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1.5px solid var(--mp-border, #e2e8f0);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mp-text-secondary);
+}
+.monkeypay-event-card:hover {
+    border-color: #86efac;
+}
+.monkeypay-event-icon {
+    font-size: 16px;
+}
+.option-receive input:checked + .monkeypay-event-card {
+    border-color: var(--mp-success, #10b981);
+    background: rgba(16, 185, 129, 0.06);
+    color: #065f46;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+.option-send input:checked + .monkeypay-event-card {
+    border-color: var(--mp-warning, #f59e0b);
+    background: rgba(245, 158, 11, 0.06);
+    color: #92400e;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.08);
+}
+
+/* ─── Connections Responsive ─────────────────────── */
+
+@media (max-width: 782px) {
+    .monkeypay-page-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .monkeypay-page-header .monkeypay-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .monkeypay-connections-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Mobile: Bottom drawer modal */
+    .monkeypay-modal {
+        align-items: flex-end;
+    }
+    .monkeypay-modal-content {
+        width: 100%;
+        max-width: 100vw;
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+        transform: translateY(100%);
+    }
+    .monkeypay-modal.is-open .monkeypay-modal-content {
+        transform: translateY(0);
+    }
+    .monkeypay-modal.is-closing .monkeypay-modal-content {
+        transform: translateY(100%);
+    }
+    .monkeypay-modal-header {
+        padding: 20px 20px 0;
+    }
+    .monkeypay-modal-header::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--mp-border, #e2e8f0);
+    }
+    .monkeypay-form-group {
+        padding: 10px 20px;
+    }
+    .monkeypay-modal-footer {
+        padding: 16px 20px 24px;
+        flex-direction: column;
+    }
+    .monkeypay-modal-footer .monkeypay-btn {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
+    }
+    .monkeypay-platform-select,
+    .monkeypay-event-toggles {
+        flex-direction: column;
+    }
+    .monkeypay-platform-card,
+    .monkeypay-event-card {
+        min-height: 44px;
+    }
+    .monkeypay-connection-btns {
+        flex-wrap: wrap;
+    }
+
+    /* Touch-friendly tap targets */
+    .monkeypay-btn-sm {
+        min-height: 36px;
+        padding: 6px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .monkeypay-connection-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .monkeypay-connection-btns {
+        justify-content: flex-end;
+    }
+}
+
+/* ═══════════════════════════════════════════════════
+   Connections v2 — Platform Grid & Dark Modal
+   ═══════════════════════════════════════════════════ */
+
+/* ─── Platform Card Grid ─────────────────────────── */
+.mp-conn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.mp-conn-card {
+    position: relative;
+    background: var(--mp-bg-card);
+    border: 1px solid var(--mp-border);
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.mp-conn-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--platform-color, var(--mp-primary));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mp-conn-card:hover {
+    border-color: color-mix(in srgb, var(--platform-color, var(--mp-primary)) 40%, transparent);
+    box-shadow: 0 4px 24px color-mix(in srgb, var(--platform-color, var(--mp-primary)) 12%, transparent),
+                0 1px 3px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+}
+
+.mp-conn-card:hover::before {
+    opacity: 1;
+}
+
+.mp-conn-card.is-active {
+    border-color: color-mix(in srgb, var(--platform-color, var(--mp-primary)) 30%, transparent);
+    background: color-mix(in srgb, var(--platform-color, var(--mp-primary)) 3%, white);
+}
+
+.mp-conn-card.is-active::before {
+    opacity: 1;
+}
+
+/* Coming Soon overlay */
+.mp-conn-card.is-coming-soon {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.mp-conn-card.is-coming-soon:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--mp-border);
+}
+
+/* Hide toggle on coming-soon cards to prevent badge overlap */
+.mp-conn-card.is-coming-soon .mp-conn-toggle-wrap {
+    display: none;
+}
+
+.mp-conn-badge-coming {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    z-index: 2;
+}
+
+/* ─── Card Header ────────────────────────────────── */
+.mp-conn-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.mp-conn-card__logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--platform-color, var(--mp-primary)) 10%, transparent);
+    color: var(--platform-color, var(--mp-primary));
+    flex-shrink: 0;
+}
+
+.mp-conn-card__logo svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* ─── Toggle Switch (Emerald) ────────────────────── */
+.mp-conn-toggle-wrap {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.mp-conn-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.mp-conn-toggle-slider {
+    width: 44px;
+    height: 24px;
+    background: #d1d5db;
+    border-radius: 12px;
+    position: relative;
+    transition: background 0.3s ease;
+}
+
+.mp-conn-toggle-slider::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.mp-conn-toggle-input:checked + .mp-conn-toggle-slider {
+    background: #10b981;
+}
+
+.mp-conn-toggle-input:checked + .mp-conn-toggle-slider::after {
+    transform: translateX(20px);
+}
+
+.mp-conn-toggle-input:disabled + .mp-conn-toggle-slider {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ─── Card Body ──────────────────────────────────── */
+.mp-conn-card__body {
+    margin-bottom: 12px;
+}
+
+.mp-conn-card__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--mp-text);
+    margin: 0 0 4px;
+}
+
+.mp-conn-card__desc {
+    font-size: 13px;
+    color: var(--mp-text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ─── Card Footer (Status) ───────────────────────── */
+.mp-conn-card__footer {
+    padding-top: 12px;
+    border-top: 1px solid var(--mp-border-light);
+}
+
+.mp-conn-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--mp-text-muted);
+}
+
+.mp-conn-status__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d1d5db;
+    flex-shrink: 0;
+}
+
+.mp-conn-status.is-on .mp-conn-status__dot {
+    background: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+    animation: mp-pulse-dot 2s ease-in-out infinite;
+}
+
+.mp-conn-status.is-on {
+    color: #10b981;
+}
+
+.mp-conn-status.is-off .mp-conn-status__dot {
+    background: #ef4444;
+}
+
+.mp-conn-status.is-off {
+    color: #ef4444;
+}
+
+.mp-conn-status.is-empty {
+    color: var(--mp-text-muted);
+}
+
+.mp-conn-status.is-coming {
+    color: #8b5cf6;
+}
+
+@keyframes mp-pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}

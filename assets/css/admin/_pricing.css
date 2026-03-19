@@ -1,0 +1,1028 @@
+    margin: 20px 0;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+    border: 1px solid #86efac;
+    border-radius: 12px;
+}
+
+.monkeypay-onboarding-plan-info .monkeypay-plan-badge strong {
+    font-size: 14px;
+    color: #065f46;
+}
+
+.monkeypay-onboarding-plan-info .monkeypay-plan-badge span {
+    font-size: 12px;
+    color: #047857;
+}
+
+/* ─── Button ─────────────────────────────────────── */
+
+.monkeypay-onboarding-btn {
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.monkeypay-onboarding-btn--primary {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+}
+
+.monkeypay-onboarding-btn--primary:hover {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+}
+
+.monkeypay-onboarding-btn--primary:active {
+    transform: translateY(0);
+}
+
+.monkeypay-onboarding-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Forgot Password Link */
+.monkeypay-forgot-link {
+    text-align: center;
+    margin-top: 12px;
+}
+.monkeypay-forgot-link a {
+    color: #94a3b8;
+    font-size: 13px;
+    text-decoration: none;
+    transition: color .2s;
+}
+.monkeypay-forgot-link a:hover {
+    color: #10b981;
+    text-decoration: underline;
+}
+
+/* Forgot Password Result Box */
+#mp-forgot-result {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Change Password Button (Account page) */
+.mp-account-chpw-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+.mp-account-chpw-btn svg {
+    width: 16px;
+    height: 16px;
+}
+.mp-account-chpw-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.mp-account-chpw-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Password inputs in account page */
+.mp-account-section input[type="password"],
+.mp-account-section input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #1e293b;
+    color: #e2e8f0;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+}
+.mp-account-section input[type="password"]:focus,
+.mp-account-section input[type="text"]:focus {
+    border-color: #10b981;
+}
+
+/* Password wrapper in account section */
+.mp-account-section .monkeypay-password-wrapper {
+    position: relative;
+}
+.mp-account-section .monkeypay-pw-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    padding: 4px;
+}
+.mp-account-section .monkeypay-pw-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+.mp-account-section .monkeypay-pw-toggle:hover {
+    color: #10b981;
+}
+
+/* ─── Messages ───────────────────────────────────── */
+
+.monkeypay-onboarding-msg--error {
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    color: #991b1b;
+    font-size: 13px;
+    margin-bottom: 16px;
+    animation: monkeypay-fadeIn 0.3s ease;
+}
+
+.monkeypay-onboarding-msg--success {
+    padding: 12px 16px;
+    background: #ecfdf5;
+    border: 1px solid #86efac;
+    border-radius: 10px;
+    color: #065f46;
+    font-size: 13px;
+    margin-bottom: 16px;
+    animation: monkeypay-fadeIn 0.3s ease;
+}
+
+/* ─── Footer ─────────────────────────────────────── */
+
+.monkeypay-onboarding-footer {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+    font-size: 11px;
+    color: var(--mp-text-muted, #94a3b8);
+}
+
+/* ─── Responsive ─────────────────────────────────── */
+
+@media (max-width: 600px) {
+    .monkeypay-onboarding-wrapper {
+        padding: 16px;
+        align-items: flex-start;
+        padding-top: 40px;
+    }
+
+    .monkeypay-onboarding-card {
+        padding: 28px 20px;
+        border-radius: 16px;
+    }
+
+    .monkeypay-onboarding-field-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .monkeypay-onboarding-logo {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+    }
+
+    .monkeypay-onboarding-header__title {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 360px) {
+    .monkeypay-onboarding-card {
+        padding: 24px 16px;
+    }
+
+    .monkeypay-onboarding-btn {
+        font-size: 14px;
+        padding: 12px 16px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════
+   Account Page — MonkeyPOS Design System
+   ═══════════════════════════════════════════════════ */
+
+.mp-account-container {
+    background: var(--mp-surface);
+    border: 1px solid var(--mp-border);
+    border-radius: 16px;
+    box-shadow: var(--mp-shadow-md);
+    overflow: hidden;
+}
+
+/* ─── Profile Header ──────────────────────────────── */
+
+.mp-account-profile {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(34,211,238,0.04) 50%, transparent 100%);
+    border-bottom: 1px solid var(--mp-border);
+}
+
+.mp-account-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--mp-primary), var(--mp-primary-dark));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+}
+
+.mp-account-profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.mp-account-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--mp-text);
+    margin: 0 0 2px 0;
+    line-height: 1.3;
+}
+
+.mp-account-email {
+    font-size: 0.8125rem;
+    color: var(--mp-text-muted);
+}
+
+.mp-account-plan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 16px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--mp-primary), var(--mp-primary-dark));
+    color: #fff;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+}
+
+/* ─── Stats Cards ─────────────────────────────────── */
+
+.mp-account-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 24px;
+    border-bottom: 1px solid var(--mp-border);
+}
+
+.mp-account-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--mp-border);
+    border-radius: 16px;
+    transition: all 0.2s ease;
+    box-shadow: var(--mp-shadow-sm);
+}
+
+.mp-account-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--mp-shadow-md);
+    border-color: var(--mp-primary-200);
+}
+
+.mp-account-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.mp-account-stat-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.mp-account-stat-icon--requests {
+    background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(34,211,238,0.08));
+    color: var(--mp-primary);
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.15);
+}
+
+.mp-account-stat-icon--gateways {
+    background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(167,139,250,0.08));
+    color: #8b5cf6;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
+}
+
+.mp-account-stat-icon--period {
+    background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.08));
+    color: #f59e0b;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+}
+
+.mp-account-stat-content {
+    min-width: 0;
+}
+
+.mp-account-stat-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--mp-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.mp-account-stat-value {
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--mp-text);
+    line-height: 1.3;
+}
+
+/* ─── Section ─────────────────────────────────────── */
+
+.mp-account-section {
+    padding: 24px;
+    border-bottom: 1px solid var(--mp-border);
+}
+
+.mp-account-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--mp-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 16px 0;
+}
+
+.mp-account-section-title svg {
+    color: var(--mp-primary);
+}
+
+/* ─── Detail Grid ─────────────────────────────────── */
+
+.mp-account-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.mp-account-field {
+    padding: 16px;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    border: 1px solid var(--mp-border);
+    transition: all 0.2s ease;
+}
+
+.mp-account-field:hover {
+    border-color: var(--mp-primary-200);
+    background: rgba(255,255,255,0.8);
+}
+
+.mp-account-field label {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--mp-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+}
+
+.mp-account-field-value {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--mp-text);
+    word-break: break-all;
+    line-height: 1.5;
+}
+
+/* ─── API Key ─────────────────────────────────────── */
+
+.mp-account-apikey-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(6,182,212,0.04), rgba(34,211,238,0.02));
+    border-radius: 12px;
+    padding: 6px 6px 6px 18px;
+    border: 1px solid var(--mp-border);
+}
+
+.mp-account-apikey-value {
+    flex: 1;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.8125rem;
+    color: var(--mp-text);
+    background: transparent;
+    word-break: break-all;
+    line-height: 1.5;
+    padding: 10px 0;
+}
+
+.mp-account-toggle-btn,
+.mp-account-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--mp-border);
+    background: var(--mp-surface);
+    color: var(--mp-text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mp-account-toggle-btn:hover,
+.mp-account-copy-btn:hover {
+    background: var(--mp-primary-50);
+    color: var(--mp-primary);
+    border-color: var(--mp-primary-200);
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.15);
+}
+
+.mp-account-toggle-btn svg,
+.mp-account-copy-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ─── Danger Zone ─────────────────────────────────── */
+
+.mp-account-danger-zone {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(239,68,68,0.05), rgba(239,68,68,0.02));
+}
+
+.mp-account-danger-info strong {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #dc2626;
+    margin-bottom: 2px;
+}
+
+.mp-account-danger-info p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--mp-text-muted);
+    line-height: 1.5;
+}
+
+.mp-account-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #dc2626;
+    background: #fff;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.mp-account-logout-btn:hover {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    transform: translateY(-1px);
+}
+
+.mp-account-logout-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ─── Responsive ──────────────────────────────────── */
+
+@media (max-width: 782px) {
+    .mp-account-profile {
+        flex-wrap: wrap;
+        padding: 20px;
+    }
+
+    .mp-account-plan-badge {
+        margin-left: auto;
+    }
+
+    .mp-account-stats {
+        grid-template-columns: 1fr;
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .mp-account-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mp-account-section {
+        padding: 16px;
+    }
+
+    .mp-account-danger-zone {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    .mp-account-logout-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .monkeypay-nav-label {
+        display: none;
+    }
+
+    .monkeypay-nav-item {
+        padding: 10px 14px;
+    }
+
+    .monkeypay-nav-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .mp-account-profile {
+        padding: 16px;
+        gap: 12px;
+    }
+
+
+    .mp-account-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+        border-radius: 12px;
+    }
+
+    .mp-account-name {
+        font-size: 1rem;
+    }
+
+    .mp-account-stats {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .mp-account-stat-card {
+        padding: 14px;
+    }
+
+    .mp-account-stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .mp-account-section {
+        padding: 12px;
+    }
+
+    .mp-account-danger-zone {
+        padding: 12px;
+    }
+}
+
+/* ═════════════════════════════════════════════════════
+   Pricing Page
+   ═════════════════════════════════════════════════════ */
+
+.mp-pricing-header {
+    text-align: center;
+    padding: 20px 0 30px;
+}
+
+.mp-pricing-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--mp-text);
+    margin: 0 0 8px;
+}
+
+.mp-pricing-subtitle {
+    color: var(--mp-text-muted);
+    font-size: 0.9375rem;
+    margin: 0 0 28px;
+}
+
+/* Toggle Switch */
+.mp-pricing-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 16px;
+    background: var(--mp-surface);
+    border-radius: 50px;
+    border: 1px solid var(--mp-border);
+}
+
+.mp-pricing-toggle-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--mp-text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mp-pricing-toggle-label--active {
+    color: var(--mp-text);
+    font-weight: 600;
+}
+
+.mp-pricing-save-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: #fff;
+    letter-spacing: 0.02em;
+}
+
+.mp-pricing-toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: #cbd5e1;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    flex-shrink: 0;
+}
+
+.mp-pricing-toggle-switch--active {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.mp-pricing-toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.mp-pricing-toggle-switch--active .mp-pricing-toggle-knob {
+    transform: translateX(20px);
+}
+
+/* Plans Grid */
+.mp-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 0 0 30px;
+}
+
+/* Plan Card */
+.mp-plan-card {
+    position: relative;
+    background: var(--mp-surface);
+    border: 1.5px solid var(--mp-border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.mp-plan-card:hover {
+    border-color: var(--mp-primary-200);
+    box-shadow: 0 8px 30px rgba(6, 182, 212, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Recommended Card — glow */
+.mp-plan-card--recommended {
+    border-color: transparent;
+    background: linear-gradient(var(--mp-surface), var(--mp-surface)) padding-box,
+                linear-gradient(135deg, #06b6d4, #0891b2, #8b5cf6) border-box;
+    border: 2px solid transparent;
+    box-shadow: 0 8px 32px rgba(6, 182, 212, 0.18), 0 0 0 1px rgba(6, 182, 212, 0.06);
+    transform: scale(1.02);
+}
+
+.mp-plan-card--recommended:hover {
+    transform: scale(1.04) translateY(-2px);
+    box-shadow: 0 12px 40px rgba(6, 182, 212, 0.22), 0 0 0 1px rgba(6, 182, 212, 0.1);
+}
+
+/* "Phổ biến nhất" Ribbon */
+.mp-plan-ribbon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: #fff;
+    text-align: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 5px 0;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.mp-plan-card--recommended .mp-plan-header {
+    margin-top: 20px;
+}
+
+/* Plan Header */
+.mp-plan-header {
+    margin-bottom: 20px;
+}
+
+.mp-plan-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.mp-plan-desc {
+    font-size: 0.8125rem;
+    color: var(--mp-text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Price */
+.mp-plan-price {
+    margin-bottom: 20px;
+    min-height: 60px;
+}
+
+.mp-plan-price-amount {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--mp-text);
+    letter-spacing: -0.02em;
+}
+
+.mp-plan-price-suffix {
+    font-size: 0.8125rem;
+    color: var(--mp-text-muted);
+    font-weight: 500;
+    margin-left: 2px;
+}
+
+.mp-plan-yearly-note {
+    font-size: 0.75rem;
+    color: var(--mp-text-muted);
+    margin-top: 4px;
+}
+
+.mp-plan-save {
+    color: var(--mp-success, #10b981);
+    font-weight: 600;
+}
+
+/* CTA Button */
+.mp-plan-cta {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1.5px solid var(--mp-border);
+    background: var(--mp-surface);
+    color: var(--mp-text);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 20px;
+}
+
+.mp-plan-cta:hover {
+    border-color: var(--mp-primary);
+    color: var(--mp-primary);
+    box-shadow: 0 2px 12px rgba(6, 182, 212, 0.12);
+}
+
+.mp-plan-cta--recommended {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+}
+
+.mp-plan-cta--recommended:hover {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+    transform: translateY(-1px);
+}
+
+.mp-plan-cta--current {
+    background: var(--mp-primary-50);
+    border-color: var(--mp-primary-200);
+    color: var(--mp-primary);
+    cursor: default;
+    opacity: 0.7;
+}
+
+.mp-plan-cta--current:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Feature list */
+.mp-plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+}
+
+.mp-plan-features li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8125rem;
+    color: var(--mp-text);
+    padding: 6px 0;
+    border-top: 1px solid var(--mp-border-light, #f1f5f9);
+}
+
+.mp-plan-features li:first-child {
+    border-top: none;
+}
+
+.mp-plan-features li svg {
+    width: 15px;
+    height: 15px;
+    color: var(--mp-success, #10b981);
+    flex-shrink: 0;
+}
+
+/* Loading skeleton */
+.mp-pricing-loading {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    grid-column: 1 / -1;
+}
+
+.mp-pricing-skeleton {
+    height: 380px;
+    border-radius: 16px;
+    background: linear-gradient(90deg, var(--mp-border-light, #f1f5f9) 25%, #e2e8f0 50%, var(--mp-border-light, #f1f5f9) 75%);
+    background-size: 200% 100%;
+    animation: mp-shimmer 1.5s infinite;
+}
+
+@keyframes mp-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Footer */
+.mp-pricing-footer {
+    text-align: center;
+    padding: 10px 0 20px;
+}
+
+.mp-pricing-footer p {
+    color: var(--mp-text-muted);
+    font-size: 0.8125rem;
+    margin: 0;
+}
+
+/* Account upgrade button */
+.mp-account-upgrade-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: #fff;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.25);
+    white-space: nowrap;
+}
+
+.mp-account-upgrade-btn:hover {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+    transform: translateY(-1px);
+    color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .mp-pricing-grid,
+    .mp-pricing-loading {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .mp-plan-card--recommended {
+        transform: none;
+    }
+    .mp-plan-card--recommended:hover {
+        transform: translateY(-2px);
+    }
+}
+
+@media (max-width: 600px) {
+    .mp-pricing-grid,
+    .mp-pricing-loading {
+        grid-template-columns: 1fr;
+    }
+    .mp-pricing-title {
+        font-size: 1.25rem;
+    }
+    .mp-pricing-toggle {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .mp-plan-card {
+        padding: 22px 18px;
+    }
+    .monkeypay-gateway-logo {
+        width: 52px;
+        height: 52px;
+    }
+    .monkeypay-gateway-name {
+        font-size: 0.7rem;
+    }
+    .monkeypay-gateway-header {
+        gap: var(--mp-space-2);
+    }
+}

@@ -1,0 +1,131 @@
+/* ═══════════════════════════════════════════════════
+   Admin Wrap — Override WP Admin BG
+   ═══════════════════════════════════════════════════ */
+.monkeypay-admin-wrap {
+    max-width: 100%;
+    margin: var(--mp-space-6) 20px var(--mp-space-6) 0;
+    padding: 0 var(--mp-space-4);
+    font-family: var(--mp-font);
+    color: var(--mp-text);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════
+   Header
+   ═══════════════════════════════════════════════════ */
+.monkeypay-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--mp-space-6);
+    padding: var(--mp-space-6) var(--mp-space-8);
+    background: var(--mp-bg-surface);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-xl);
+    box-shadow: var(--mp-shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.monkeypay-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--mp-primary), var(--mp-primary-light));
+}
+
+.monkeypay-header__logo {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-3);
+}
+
+.monkeypay-header__icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--mp-primary), var(--mp-primary-dark));
+    border-radius: var(--mp-radius-lg);
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+}
+
+.monkeypay-header__icon svg {
+    width: 24px;
+    height: 24px;
+    color: #fff;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.monkeypay-header__title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--mp-text);
+    letter-spacing: -0.3px;
+}
+
+.monkeypay-header__subtitle {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--mp-text-muted);
+    font-weight: 400;
+}
+
+/* Status Badge */
+.monkeypay-header__badge {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-2);
+    padding: var(--mp-space-2) var(--mp-space-3);
+    background: var(--mp-bg);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-full);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mp-text-muted);
+    transition: var(--mp-transition);
+}
+
+.monkeypay-header__badge.connected {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: var(--mp-success);
+}
+
+.monkeypay-header__badge.disconnected {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: var(--mp-error);
+}
+
+.monkeypay-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--mp-text-muted);
+    transition: var(--mp-transition);
+}
+
+.connected .monkeypay-status-dot {
+    background: var(--mp-success);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+    animation: mp-pulse-dot 2s ease-in-out infinite;
+}
+
+.disconnected .monkeypay-status-dot {
+    background: var(--mp-error);
+}
+
+@keyframes mp-pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}

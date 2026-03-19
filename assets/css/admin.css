@@ -1,0 +1,39 @@
+/**
+ * MonkeyPay Admin Stylesheet — Dispatcher
+ *
+ * Modular CSS architecture: each @import loads a focused partial.
+ * Order matters — tokens first, then base → component → page → overrides.
+ *
+ * @package MonkeyPay
+ * @since   3.0.0
+ */
+
+/* ── 1. Design Tokens (CSS Variables) ─────────────── */
+@import url('./admin/_tokens.css');
+
+/* ── 2. Base Layout (Admin Shell, Sidebar) ────────── */
+@import url('./admin/_layout.css');
+
+/* ── 3. Shared Components ─────────────────────────── */
+@import url('./admin/_cards.css');
+@import url('./admin/_stats.css');
+@import url('./admin/_forms.css');
+@import url('./admin/_toggles.css');
+@import url('./admin/_buttons.css');
+@import url('./admin/_integrations.css');
+@import url('./admin/_toast.css');
+@import url('./admin/_spinner.css');
+@import url('./admin/_info-box.css');
+
+/* ── 4. Global Header & Navigation ────────────────── */
+@import url('./admin/_header-nav.css');
+
+/* ── 5. Page-Specific Styles ──────────────────────── */
+@import url('./admin/_onboarding.css');
+@import url('./admin/_pricing.css');
+@import url('./admin/_dashboard.css');
+@import url('./admin/_connections.css');
+
+/* ── 6. Overlays (Modals, Drawers) ────────────────── */
+@import url('./admin/_modals.css');
+@import url('./admin/_card-builder.css');

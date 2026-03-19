@@ -1,0 +1,82 @@
+/* ═══════════════════════════════════════════════════
+   Toggle Switches
+   ═══════════════════════════════════════════════════ */
+.monkeypay-toggles {
+    margin: var(--mp-space-6) 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--mp-space-3);
+}
+
+.monkeypay-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-4);
+    padding: var(--mp-space-4);
+    background: var(--mp-bg);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-lg);
+    transition: var(--mp-transition);
+}
+
+.monkeypay-toggle:hover {
+    border-color: rgba(6, 182, 212, 0.2);
+    background: rgba(6, 182, 212, 0.02);
+}
+
+.monkeypay-toggle__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.monkeypay-toggle__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mp-text);
+}
+
+.monkeypay-toggle__desc {
+    font-size: 12px;
+    color: var(--mp-text-muted);
+}
+
+.monkeypay-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.monkeypay-switch input { display: none; }
+
+.monkeypay-switch__slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: #cbd5e1;
+    border-radius: var(--mp-radius-full);
+    transition: var(--mp-transition);
+}
+
+.monkeypay-switch__slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: var(--mp-transition);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.monkeypay-switch input:checked + .monkeypay-switch__slider {
+    background: var(--mp-primary);
+}
+
+.monkeypay-switch input:checked + .monkeypay-switch__slider::before {
+    transform: translateX(20px);
+}

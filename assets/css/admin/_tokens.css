@@ -1,0 +1,75 @@
+/**
+ * MonkeyPay Admin — MonkeyPOS Design System
+ *
+ * Cyan/Teal palette, glassmorphism, 8px grid, no emojis
+ *
+ * @package MonkeyPay
+ * @since   1.0.0
+ */
+
+/* ═══════════════════════════════════════════════════
+   CSS Variables — MonkeyPOS Tokens
+   ═══════════════════════════════════════════════════ */
+:root {
+    /* Primary (Cyan/Teal Tech) */
+    --mp-primary: #06b6d4;
+    --mp-primary-light: #22d3ee;
+    --mp-primary-dark: #0891b2;
+    --mp-primary-50: #ecfeff;
+    --mp-primary-100: #cffafe;
+    --mp-primary-200: #a5f3fc;
+    --mp-primary-700: #0e7490;
+
+    /* Semantic */
+    --mp-success: #10b981;
+    --mp-warning: #f59e0b;
+    --mp-error: #ef4444;
+    --mp-info: #3b82f6;
+
+    /* Backgrounds (Light Mode) */
+    --mp-bg: #f8fafc;
+    --mp-bg-card: rgba(255, 255, 255, 0.7);
+    --mp-bg-input: rgba(255, 255, 255, 0.8);
+    --mp-bg-surface: #ffffff;
+
+    /* Text */
+    --mp-text: #0f172a;
+    --mp-text-secondary: #475569;
+    --mp-text-muted: #94a3b8;
+
+    /* Borders */
+    --mp-border: rgba(0, 0, 0, 0.08);
+    --mp-border-light: #f1f5f9;
+    --mp-border-active: #06b6d4;
+
+    /* Surfaces */
+    --mp-surface: #ffffff;
+
+    /* Spacing (8px Grid) */
+    --mp-space-1: 4px;
+    --mp-space-2: 8px;
+    --mp-space-3: 12px;
+    --mp-space-4: 16px;
+    --mp-space-5: 20px;
+    --mp-space-6: 24px;
+    --mp-space-8: 32px;
+
+    /* Radius */
+    --mp-radius-sm: 6px;
+    --mp-radius-md: 8px;
+    --mp-radius-lg: 12px;
+    --mp-radius-xl: 16px;
+    --mp-radius-full: 9999px;
+
+    /* Shadows */
+    --mp-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --mp-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --mp-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --mp-shadow-primary: 0 4px 15px rgba(6, 182, 212, 0.3);
+
+    /* Motion */
+    --mp-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Font */
+    --mp-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}

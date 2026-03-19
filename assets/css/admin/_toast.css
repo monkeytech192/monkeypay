@@ -1,0 +1,36 @@
+/* ═══════════════════════════════════════════════════
+   Toast Notification
+   ═══════════════════════════════════════════════════ */
+.monkeypay-toast {
+    position: fixed;
+    top: 40px;
+    right: 24px;
+    padding: 16px 28px;
+    background: var(--mp-bg-surface);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-lg);
+    box-shadow: var(--mp-shadow-lg);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--mp-font);
+    color: var(--mp-text);
+    transform: translateY(-40px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100001;
+    min-width: 240px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.monkeypay-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.monkeypay-toast.success { border-left: 4px solid var(--mp-success); color: var(--mp-success); }
+.monkeypay-toast.error { border-left: 4px solid var(--mp-error); color: var(--mp-error); }
+.monkeypay-toast.info { border-left: 4px solid var(--mp-info, #3b82f6); color: var(--mp-info, #3b82f6); }
+.monkeypay-toast.warning { border-left: 4px solid var(--mp-warning); color: var(--mp-warning); }

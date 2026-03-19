@@ -1,0 +1,65 @@
+/* ═══════════════════════════════════════════════════
+   Cards
+   ═══════════════════════════════════════════════════ */
+.monkeypay-card {
+    margin-bottom: var(--mp-space-5);
+    padding: var(--mp-space-6);
+    background: var(--mp-bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-xl);
+    box-shadow: var(--mp-shadow-sm);
+    transition: var(--mp-transition);
+}
+
+.monkeypay-card:hover {
+    box-shadow: var(--mp-shadow-md);
+}
+
+.monkeypay-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--mp-space-5);
+    padding-bottom: var(--mp-space-4);
+    border-bottom: 1px solid var(--mp-border);
+}
+
+.monkeypay-card__header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-3);
+}
+
+.monkeypay-card__icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(34, 211, 238, 0.05));
+    border: 1px solid rgba(6, 182, 212, 0.15);
+    border-radius: var(--mp-radius-md);
+}
+
+.monkeypay-card__icon svg {
+    width: 20px;
+    height: 20px;
+    color: var(--mp-primary);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.monkeypay-card__icon[style*="background"] svg {
+    color: #fff;
+}
+
+.monkeypay-card__header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--mp-text);
+}

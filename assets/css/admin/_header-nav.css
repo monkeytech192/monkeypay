@@ -1,0 +1,150 @@
+/* ═══════════════════════════════════════════════════
+   Global Header (checkin-mkt192-wp pattern)
+   ═══════════════════════════════════════════════════ */
+.monkeypay-global-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--mp-space-4) var(--mp-space-6);
+    margin-bottom: var(--mp-space-5);
+    background: var(--mp-bg-surface);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-xl);
+    box-shadow: var(--mp-shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.monkeypay-global-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--mp-primary), var(--mp-primary-light));
+}
+
+.monkeypay-header-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-3);
+    flex-shrink: 0;
+}
+
+.monkeypay-brand-logo {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--mp-primary), var(--mp-primary-dark));
+    border-radius: var(--mp-radius-lg);
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+}
+
+.monkeypay-brand-logo svg {
+    width: 20px;
+    height: 20px;
+    color: #fff;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.monkeypay-brand-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--mp-text);
+    letter-spacing: -0.3px;
+}
+
+.monkeypay-brand-version {
+    margin: 0;
+    font-size: 11px;
+    color: var(--mp-text-muted);
+    font-weight: 500;
+}
+
+/* Navigation Tabs */
+.monkeypay-global-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-1);
+}
+
+.monkeypay-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mp-text-muted);
+    text-decoration: none;
+    border-radius: var(--mp-radius-md);
+    transition: var(--mp-transition);
+    white-space: nowrap;
+}
+
+.monkeypay-nav-item:hover {
+    color: var(--mp-primary);
+    background: var(--mp-primary-50);
+}
+
+.monkeypay-nav-item.active {
+    color: var(--mp-primary);
+    background: var(--mp-primary-50);
+    font-weight: 600;
+    box-shadow: inset 0 -2px 0 var(--mp-primary);
+}
+
+.monkeypay-nav-icon {
+    display: flex;
+    align-items: center;
+}
+
+.monkeypay-nav-icon svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.monkeypay-nav-label {
+    line-height: 1;
+}
+
+/* Push the last nav item (Pricing) to the far right */
+.monkeypay-nav-item:last-child {
+    margin-left: auto;
+}
+
+/* ═══════════════════════════════════════════════════
+   Page Header
+   ═══════════════════════════════════════════════════ */
+.monkeypay-page-header {
+    margin-bottom: var(--mp-space-6);
+}
+
+.monkeypay-page-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--mp-text);
+    display: flex;
+    align-items: center;
+}
+
+.monkeypay-page-desc {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--mp-text-muted);
+    padding-left: 32px;
+}

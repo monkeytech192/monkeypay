@@ -1,0 +1,19 @@
+/* ═══════════════════════════════════════════════════
+   Webhook URL Info Box (MonkeyPOS Pattern)
+   ═══════════════════════════════════════════════════ */
+.monkeypay-info-box {
+    padding: var(--mp-space-4);
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.06), rgba(34, 211, 238, 0.03));
+    border: 1px solid rgba(6, 182, 212, 0.15);
+    border-left: 3px solid var(--mp-primary);
+    border-radius: var(--mp-radius-lg);
+    margin-top: var(--mp-space-4);
+    font-size: 13px;
+    color: var(--mp-text-secondary);
+    line-height: 1.6;
+}
+
+.monkeypay-info-box strong {
+    color: var(--mp-primary-dark);
+    font-weight: 600;
+}
