@@ -45,7 +45,7 @@ class MonkeyPay_REST_Transactions {
             ],
         ] );
 
-        // Check transaction status (public — nonce verified)
+        // Check transaction status (authenticated via local API key)
         register_rest_route( 'monkeypay/v1', '/transactions/(?P<tx_id>[a-zA-Z0-9_]+)', [
             'methods'             => 'GET',
             'callback'            => [ __CLASS__, 'check_transaction' ],
@@ -86,8 +86,31 @@ class MonkeyPay_REST_Transactions {
 
     /**
      * Check transaction status.
+     * Requires a valid local API key via X-Api-Key header or api_key query param.
      */
     public static function check_transaction( $request ) {
+        // Validate API key
+        $api_key = $request->get_header( 'X-Api-Key' );
+        if ( empty( $api_key ) ) {
+            $api_key = $request->get_param( 'api_key' );
+        }
+
+        if ( empty( $api_key ) ) {
+            return new WP_REST_Response( [
+                'success' => false,
+                'message' => 'API key is required. Pass via X-Api-Key header or api_key query param.',
+            ], 401 );
+        }
+
+        $key_record = MonkeyPay_REST_API_Keys::validate_api_key( $api_key );
+
+        if ( ! $key_record ) {
+            return new WP_REST_Response( [
+                'success' => false,
+                'message' => 'Invalid or revoked API key.',
+            ], 401 );
+        }
+
         $api    = new MonkeyPay_API_Client();
         $result = $api->check_transaction( $request->get_param( 'tx_id' ) );
 

@@ -1,0 +1,445 @@
+/**
+ * MonkeyPay Admin — API Keys Page Styles
+ *
+ * Table, modals, status badges for API key management.
+ * Page header now uses monkeypay-card__header pattern (see _cards.css).
+ * Uses design tokens from _tokens.css.
+ *
+ * @package MonkeyPay
+ * @since   3.1.0
+ */
+
+/* ── Info Banner (inside card body) ──────────────── */
+
+.mp-apikeys-info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--mp-space-3);
+    padding: 14px var(--mp-space-4);
+    background: var(--mp-primary-50);
+    border: 1px solid var(--mp-primary-200);
+    border-radius: var(--mp-radius-md);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--mp-primary-700);
+    margin: 0 24px 24px;
+}
+
+.mp-apikeys-info-banner svg {
+    flex-shrink: 0;
+    color: var(--mp-primary);
+    margin-top: 2px;
+}
+
+.mp-apikeys-info-banner a {
+    color: var(--mp-primary);
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 4px;
+}
+
+.mp-apikeys-info-banner a:hover {
+    text-decoration: underline;
+}
+
+/* ── Table Wrapper ───────────────────────────────── */
+
+.mp-apikeys-table-wrap {
+    background: var(--mp-bg-surface);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-lg);
+    box-shadow: var(--mp-shadow-sm);
+    overflow: hidden;
+}
+
+/* Loading */
+.mp-apikeys-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--mp-space-3);
+    padding: var(--mp-space-8) var(--mp-space-4);
+    color: var(--mp-text-muted);
+    font-size: 14px;
+}
+
+/* Empty State */
+.mp-apikeys-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--mp-space-4);
+    padding: 48px var(--mp-space-4);
+    text-align: center;
+}
+
+.mp-apikeys-empty p {
+    font-size: 14px;
+    color: var(--mp-text-muted);
+    margin: 0;
+}
+
+/* ── Table ────────────────────────────────────────── */
+
+.mp-apikeys-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.mp-apikeys-table thead {
+    background: var(--mp-bg);
+    border-bottom: 1px solid var(--mp-border);
+}
+
+.mp-apikeys-table th {
+    padding: var(--mp-space-3) var(--mp-space-4);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--mp-text-muted);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.mp-apikeys-table td {
+    padding: var(--mp-space-3) var(--mp-space-4);
+    border-bottom: 1px solid var(--mp-border-light);
+    vertical-align: middle;
+}
+
+.mp-apikeys-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.mp-apikeys-table tbody tr {
+    transition: var(--mp-transition);
+}
+
+.mp-apikeys-table tbody tr:hover {
+    background: rgba(6, 182, 212, 0.03);
+}
+
+/* Column widths */
+.mp-col-label   { width: 20%; }
+.mp-col-key     { width: 28%; }
+.mp-col-status  { width: 10%; }
+.mp-col-used    { width: 16%; }
+.mp-col-created { width: 14%; }
+.mp-col-actions { width: 12%; text-align: right !important; }
+
+/* ── Key Display ─────────────────────────────────── */
+
+.mp-key-value {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mp-space-2);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    color: var(--mp-text-secondary);
+    background: var(--mp-bg);
+    padding: 4px 8px;
+    border-radius: var(--mp-radius-sm);
+    border: 1px solid var(--mp-border);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Label (editable) ────────────────────────────── */
+
+.mp-key-label {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-2);
+}
+
+.mp-key-label__text {
+    font-weight: 500;
+    color: var(--mp-text);
+}
+
+.mp-key-label__edit {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    color: var(--mp-text-muted);
+    border-radius: var(--mp-radius-sm);
+    transition: var(--mp-transition);
+    display: inline-flex;
+    align-items: center;
+    opacity: 0;
+}
+
+.mp-apikeys-table tbody tr:hover .mp-key-label__edit {
+    opacity: 1;
+}
+
+.mp-key-label__edit:hover {
+    color: var(--mp-primary);
+    background: var(--mp-primary-50);
+}
+
+/* Inline edit input */
+.mp-key-label__input {
+    font-size: 13px;
+    padding: 2px 6px;
+    border: 1px solid var(--mp-primary);
+    border-radius: var(--mp-radius-sm);
+    outline: none;
+    width: 140px;
+    font-family: var(--mp-font);
+}
+
+/* ── Status Badges ───────────────────────────────── */
+
+.mp-key-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: var(--mp-radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.mp-key-status--active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.mp-key-status--revoked {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.mp-key-status__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.mp-key-status--active .mp-key-status__dot {
+    background: #10b981;
+    animation: mp-pulse 2s infinite;
+}
+
+.mp-key-status--revoked .mp-key-status__dot {
+    background: #ef4444;
+}
+
+@keyframes mp-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+}
+
+/* ── Action Buttons ──────────────────────────────── */
+
+.mp-key-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--mp-space-2);
+}
+
+.mp-key-actions .mp-btn--icon {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--mp-radius-sm);
+    border: 1px solid var(--mp-border);
+    background: var(--mp-bg-surface);
+    cursor: pointer;
+    transition: var(--mp-transition);
+    color: var(--mp-text-secondary);
+    padding: 0;
+}
+
+.mp-key-actions .mp-btn--icon:hover {
+    border-color: var(--mp-primary);
+    color: var(--mp-primary);
+    background: var(--mp-primary-50);
+}
+
+.mp-key-actions .mp-btn--icon.mp-btn--danger-icon:hover {
+    border-color: var(--mp-error);
+    color: var(--mp-error);
+    background: rgba(239, 68, 68, 0.06);
+}
+
+/* ── New Key Display (Modal) ─────────────────────── */
+
+.mp-new-key-display {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mp-space-4);
+}
+
+.mp-new-key-warning {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-2);
+    padding: var(--mp-space-3);
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: var(--mp-radius-md);
+    font-size: 13px;
+    color: #92400e;
+}
+
+.mp-new-key-warning svg {
+    flex-shrink: 0;
+    color: var(--mp-warning);
+}
+
+.mp-new-key-box {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mp-space-3);
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+}
+
+.mp-new-key-code {
+    display: block;
+    width: 100%;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12.5px;
+    color: var(--mp-text);
+    word-break: break-all;
+    line-height: 1.6;
+    padding: 14px 16px;
+    background: var(--mp-bg);
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius-md);
+    user-select: all;
+}
+
+.mp-new-key-copy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--mp-font);
+    color: #fff;
+    background: linear-gradient(135deg, var(--mp-primary), var(--mp-primary-dark));
+    border: none;
+    border-radius: var(--mp-radius-md);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mp-new-key-copy-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(6, 182, 212, 0.3);
+}
+
+.mp-new-key-copy-btn:active {
+    transform: translateY(0);
+}
+
+.mp-new-key-copy-btn.is-copied {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.mp-new-key-copy-btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* ── Modal Variants ──────────────────────────────── */
+
+.mp-modal-header--success h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-2);
+    color: var(--mp-success);
+}
+
+.mp-modal-header--danger h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--mp-space-2);
+    color: var(--mp-error);
+}
+
+/* ── Danger Button ───────────────────────────────── */
+
+.mp-btn--danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--mp-space-2);
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--mp-radius-md);
+    cursor: pointer;
+    transition: var(--mp-transition);
+    background: var(--mp-error);
+    color: #fff;
+}
+
+.mp-btn--danger:hover {
+    background: #dc2626;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* ── Danger text ─────────────────────────────────── */
+
+.mp-text-danger {
+    color: var(--mp-error);
+    font-size: 13px;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .mp-apikeys-info-banner {
+        margin: 12px 16px 0;
+    }
+
+    .mp-apikeys-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mp-apikeys-table {
+        min-width: 640px;
+    }
+
+    .mp-col-used,
+    .mp-col-created {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .mp-apikeys-info-banner {
+        font-size: 12px;
+        padding: var(--mp-space-2) var(--mp-space-3);
+        margin: 8px 12px 0;
+    }
+
+    .mp-new-key-code {
+        font-size: 10px;
+    }
+}

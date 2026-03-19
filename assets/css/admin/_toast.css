@@ -1,28 +1,29 @@
 /* ═══════════════════════════════════════════════════
-   Toast Notification
+   Toast Notification — Modern Premium Style
    ═══════════════════════════════════════════════════ */
 .monkeypay-toast {
     position: fixed;
     top: 40px;
     right: 24px;
-    padding: 16px 28px;
-    background: var(--mp-bg-surface);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--mp-border);
-    border-radius: var(--mp-radius-lg);
-    box-shadow: var(--mp-shadow-lg);
-    font-size: 15px;
-    font-weight: 600;
-    font-family: var(--mp-font);
-    color: var(--mp-text);
-    transform: translateY(-40px);
+    padding: 14px 22px 14px 18px;
+    background: #fff;
+    border: 1px solid var(--mp-border, #e5e7eb);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: var(--mp-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+    color: #1f2937;
+    transform: translateY(-20px);
     opacity: 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 100001;
-    min-width: 240px;
+    min-width: 260px;
+    max-width: 420px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    pointer-events: auto;
 }
 
 .monkeypay-toast.show {
@@ -30,7 +31,184 @@
     opacity: 1;
 }
 
-.monkeypay-toast.success { border-left: 4px solid var(--mp-success); color: var(--mp-success); }
-.monkeypay-toast.error { border-left: 4px solid var(--mp-error); color: var(--mp-error); }
-.monkeypay-toast.info { border-left: 4px solid var(--mp-info, #3b82f6); color: var(--mp-info, #3b82f6); }
-.monkeypay-toast.warning { border-left: 4px solid var(--mp-warning); color: var(--mp-warning); }
+/* Icon circle */
+.monkeypay-toast__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.monkeypay-toast__icon svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+}
+
+/* Toast body */
+.monkeypay-toast__body {
+    flex: 1;
+    line-height: 1.4;
+}
+
+/* Close button */
+.monkeypay-toast__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 6px;
+    color: #9ca3af;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.monkeypay-toast__close:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #374151;
+}
+
+.monkeypay-toast__close svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ─── Type variants ─── */
+
+/* Success */
+.monkeypay-toast.success {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.monkeypay-toast.success .monkeypay-toast__icon {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+/* Error */
+.monkeypay-toast.error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.monkeypay-toast.error .monkeypay-toast__icon {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Info */
+.monkeypay-toast.info {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.monkeypay-toast.info .monkeypay-toast__icon {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+/* Warning */
+.monkeypay-toast.warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.monkeypay-toast.warning .monkeypay-toast__icon {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* ─── Dark mode ─── */
+.mp-theme-dark .monkeypay-toast {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.mp-theme-dark .monkeypay-toast.success {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+}
+
+.mp-theme-dark .monkeypay-toast.success .monkeypay-toast__icon {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.mp-theme-dark .monkeypay-toast.error {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+}
+
+.mp-theme-dark .monkeypay-toast.error .monkeypay-toast__icon {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.mp-theme-dark .monkeypay-toast.info {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+}
+
+.mp-theme-dark .monkeypay-toast.info .monkeypay-toast__icon {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+.mp-theme-dark .monkeypay-toast.warning {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #fcd34d;
+}
+
+.mp-theme-dark .monkeypay-toast.warning .monkeypay-toast__icon {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+.mp-theme-dark .monkeypay-toast__close {
+    color: #64748b;
+}
+
+.mp-theme-dark .monkeypay-toast__close:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+}
+
+/* ─── Progress bar ─── */
+.monkeypay-toast__progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 0 0 14px 14px;
+    animation: mp-toast-progress 3s linear forwards;
+}
+
+.monkeypay-toast.success .monkeypay-toast__progress { background: #16a34a; }
+.monkeypay-toast.error .monkeypay-toast__progress { background: #dc2626; }
+.monkeypay-toast.info .monkeypay-toast__progress { background: #2563eb; }
+.monkeypay-toast.warning .monkeypay-toast__progress { background: #d97706; }
+
+@keyframes mp-toast-progress {
+    from { width: 100%; }
+    to { width: 0%; }
+}

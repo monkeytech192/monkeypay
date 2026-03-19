@@ -2,12 +2,14 @@
 
 # 🐵 MonkeyPay
 
-**Cổng Thanh Toán Chuyển Khoản Tự Động cho WordPress**
+**Cổng thanh toán chuyển khoản ngân hàng tự động cho WordPress**
 
-[![Phiên bản](https://img.shields.io/badge/phiên_bản-3.0.0-blue.svg)](./CHANGELOG.md)
-[![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-21759B.svg)](https://wordpress.org/)
-[![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4.svg)](https://php.net/)
-[![Giấy phép](https://img.shields.io/badge/giấy_phép-GPL--2.0--or--later-green.svg)](./LICENSE)
+[![Phiên bản](https://img.shields.io/badge/phiên_bản-3.2.0-6366f1.svg?style=flat-square)](./CHANGELOG.md)
+[![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-21759B.svg?style=flat-square&logo=wordpress)](https://wordpress.org/)
+[![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4.svg?style=flat-square&logo=php&logoColor=white)](https://php.net/)
+[![Giấy phép](https://img.shields.io/badge/giấy_phép-GPL--2.0--or--later-green.svg?style=flat-square)](./LICENSE)
+
+Cổng thanh toán chuyển khoản ngân hàng production-ready cho WordPress — đối soát tự động, tạo mã QR, webhook thông báo, và tích hợp WooCommerce.
 
 [🇬🇧 English](./README.md)
 
@@ -15,56 +17,101 @@
 
 ---
 
-## 📋 Mô tả
+## 📑 Mục lục
 
-MonkeyPay tự động hóa quy trình xác minh thanh toán chuyển khoản ngân hàng cho WordPress. Plugin tích hợp với **MB Bank** BDSD (Biến Động Số Dư) webhook để xác nhận giao dịch tức thì — không cần kiểm tra thủ công.
+- [Tính năng](#-tính-năng)
+- [Kiến trúc](#️-kiến-trúc)
+- [Bắt đầu](#-bắt-đầu)
+- [REST API](#-rest-api)
+- [Xác thực API Key](#-xác-thực-api-key)
+- [Nền tảng hỗ trợ](#-nền-tảng-hỗ-trợ)
+- [Cấu trúc dự án](#-cấu-trúc-dự-án)
+- [Nhật ký thay đổi](#-nhật-ký-thay-đổi)
+- [Giấy phép](#-giấy-phép)
+- [Đội ngũ](#-đội-ngũ)
 
-### Tính năng chính
+---
 
-- 🏦 **Xác minh tự động** — Đối soát giao dịch thời gian thực qua webhook MB Bank
-- 🛒 **Tích hợp WooCommerce** — Cổng thanh toán WC với tự động hoàn tất đơn hàng
-- 🔔 **Thông báo webhook** — Gửi thông báo Lark/Feishu với mẫu card tùy chỉnh
-- 🎨 **Kéo-thả Card Builder** — Trình soạn thảo trực quan cho giao diện thông báo
-- 🔗 **Kết nối mở rộng** — Dispatcher webhook đa nền tảng (Slack, Telegram sắp ra mắt)
-- 🔒 **Bảo mật cấp doanh nghiệp** — HMAC webhook, nonce validation, capability checks
-- 🌐 **Đa ngôn ngữ** — Hỗ trợ tiếng Việt và tiếng Anh
+## ✨ Tính năng
+
+| Danh mục | Tính năng | Mô tả |
+|----------|-----------|-------|
+| 🏦 **Thanh toán** | Xác minh tự động | Khớp giao dịch ngân hàng real-time qua webhook BĐSD MB Bank |
+| 🛒 **Thương mại** | WooCommerce Gateway | Cổng thanh toán native với tự động cập nhật trạng thái đơn hàng |
+| 🔑 **API Keys** | Hệ thống key nội bộ | Key prefix `mkp_live_`, hash SHA-256, tạo/thu hồi/quản lý |
+| 📖 **Tài liệu** | API Docs tích hợp | Tài liệu API REST tương tác với ví dụ code và nút sao chép |
+| 🔔 **Thông báo** | Webhook Dispatcher | Thông báo đa nền tảng (Lark/Feishu, Slack, Telegram) |
+| 🎨 **Card Builder** | Trình chỉnh sửa kéo thả | Thiết kế mẫu thẻ thông báo trực quan với xem trước live |
+| 🔗 **Kết nối** | Đa nền tảng | Hệ thống kết nối mở rộng cho bất kỳ dịch vụ webhook nào |
+| 🔒 **Bảo mật** | Cấp doanh nghiệp | Xác minh HMAC, nonce, giới hạn tốc độ, kiểm tra quyền |
+| 🌐 **i18n** | Đa ngôn ngữ | Hỗ trợ tiếng Việt và tiếng Anh |
 
 ---
 
 ## 🏗️ Kiến trúc
 
-MonkeyPay v3.0.0 sử dụng **kiến trúc modular**:
+MonkeyPay v3.2.0 sử dụng **kiến trúc module hóa** với các module REST API chuyên biệt:
 
 ```
-REST API Router → 6 module chuyên biệt (Settings, Transactions, Gateways, Auth, Bank, Connections)
-Connections → Dispatcher đa nền tảng → Formatters (Lark, Slack*, Telegram*)
-Integrations → Tải có điều kiện (WooCommerce, Checkin Bridge)
+┌─────────────────────────────────────────────────────────┐
+│                    MonkeyPay Plugin                      │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  │
+│  │ Settings │  │   API    │  │Gateways  │  │  Bank  │  │
+│  │ Module   │  │  Keys    │  │ Module   │  │ Module │  │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └───┬────┘  │
+│       │              │             │             │       │
+│  ┌────▼──────────────▼─────────────▼─────────────▼────┐  │
+│  │              REST API Router (Thin)                │  │
+│  │           /wp-json/monkeypay/v1/*                  │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌──────────────┐  ┌─────────────┐  ┌───────────────┐   │
+│  │ Connections  │  │ WooCommerce │  │  Checkin MKT  │   │
+│  │  Dispatcher  │  │ Integration │  │    Bridge     │   │
+│  └──────┬───────┘  └─────────────┘  └───────────────┘   │
+│         │                                               │
+│  ┌──────▼───────────────────────────────┐               │
+│  │  Formatters (Lark · Slack · Telegram)│               │
+│  └──────────────────────────────────────┘               │
+└─────────────────────────────────────────────────────────┘
 ```
 
-> Xem [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) để biết chi tiết kỹ thuật đầy đủ.
+> Xem [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) để biết chi tiết đầy đủ về kiến trúc kỹ thuật.
 
 ---
 
-## 📦 Cài đặt
+## 🚀 Bắt đầu
 
-### Từ file ZIP
-1. Tải phiên bản mới nhất
-2. Vào **WordPress Admin > Plugin > Thêm mới > Tải lên Plugin**
-3. Upload file ZIP và kích hoạt
+### Yêu cầu
 
-### Thủ công
-1. Clone/copy vào `wp-content/plugins/monkeypay/`
-2. Kích hoạt từ **WordPress Admin > Plugin**
+- WordPress ≥ 5.8
+- PHP ≥ 7.4
+- Tài khoản Internet Banking MB Bank (để xác minh thanh toán)
 
----
+### Cài đặt
 
-## ⚙️ Cấu hình
+#### Từ file ZIP
+```bash
+# 1. Tải phiên bản mới nhất
+# 2. WordPress Admin > Plugins > Add New > Upload Plugin
+# 3. Tải lên file ZIP và kích hoạt
+```
 
-1. Vào **MonkeyPay** trong thanh bên quản trị WordPress
-2. Nhập **API Key** từ [monkeytech192.vn](https://monkeytech192.vn)
-3. Cấu hình kết nối MB Bank cho xác minh thanh toán
-4. (Tùy chọn) Thiết lập webhook Lark cho thông báo
-5. (Tùy chọn) Bật cổng thanh toán WooCommerce
+#### Thủ công
+```bash
+cd wp-content/plugins/
+git clone https://github.com/monkeytech192/monkeypay.git
+# Kích hoạt từ WordPress Admin > Plugins
+```
+
+### Cấu hình
+
+1. Vào **MonkeyPay** trong thanh bên admin WordPress
+2. Nhập **API Key tổ chức** từ [monkeytech192.vn](https://monkeytech192.vn)
+3. Cấu hình cổng thanh toán (MB Bank, TPBank, v.v.)
+4. _(Tùy chọn)_ Thiết lập Lark/Feishu webhook cho thông báo
+5. _(Tùy chọn)_ Bật cổng thanh toán WooCommerce
 
 ---
 
@@ -72,14 +119,44 @@ Integrations → Tải có điều kiện (WooCommerce, Checkin Bridge)
 
 Tất cả endpoint nằm dưới `/wp-json/monkeypay/v1/`:
 
-| Module | Endpoints | Xác thực |
-|--------|-----------|----------|
-| Health | `GET /health` | Công khai |
-| Settings | `POST /settings` | Admin |
-| Transactions | `POST /transactions`, `GET /transactions/{id}` | API Key |
-| Gateways | `CRUD /gateways`, `GET /merchant-gateways` | Admin/Công khai |
-| Bank | `GET /bank/summary`, `GET /bank/history` | Admin |
-| Connections | `CRUD /connections`, `POST /connections/{id}/test` | Admin |
+| Module | Endpoint | Phương thức | Xác thực |
+|--------|----------|-------------|----------|
+| Health | `/health` | `GET` | Công khai |
+| Giao dịch | `/transactions/{tx_id}` | `GET` | API Key |
+| Giao dịch | `/transactions` | `POST` | API Key |
+| Cổng TT | `/gateways` | `CRUD` | Admin |
+| Cổng TT | `/merchant-gateways` | `GET` | API Key |
+| Cài đặt | `/settings` | `POST` | Admin |
+| Ngân hàng | `/bank/summary` | `GET` | Admin |
+| Ngân hàng | `/bank/history` | `GET` | Admin |
+| Kết nối | `/connections` | `CRUD` | Admin |
+| API Keys | `/api-keys` | `CRUD` | Admin |
+
+---
+
+## 🔐 Xác thực API Key
+
+MonkeyPay sử dụng hệ thống API key nội bộ với prefix `mkp_live_`.
+
+### Tạo Key
+
+Vào **MonkeyPay > API Keys** trong admin panel để tạo và quản lý key.
+
+### Sử dụng Key
+
+**Khuyến nghị — Header:**
+```bash
+curl -X GET "https://yoursite.com/wp-json/monkeypay/v1/transactions/MKP_123" \
+  -H "X-Api-Key: mkp_live_your_key_here"
+```
+
+**Thay thế — Query Parameter:**
+```bash
+curl -X GET "https://yoursite.com/wp-json/monkeypay/v1/transactions/MKP_123?api_key=mkp_live_your_key_here"
+```
+
+> [!WARNING]
+> Bảo mật API key của bạn. Không bao giờ để lộ key trong frontend code, repository công khai, hoặc URL.
 
 ---
 
@@ -87,26 +164,61 @@ Tất cả endpoint nằm dưới `/wp-json/monkeypay/v1/`:
 
 | Nền tảng | Trạng thái | Mô tả |
 |----------|------------|-------|
-| MB Bank | ✅ Hoạt động | BDSD webhook xác minh thanh toán |
-| Lark/Feishu | ✅ Hoạt động | Card thông báo thanh toán |
-| WooCommerce | ✅ Hoạt động | Tích hợp cổng thanh toán |
-| Slack | 🔜 Sắp ra mắt | Thông báo thanh toán |
-| Telegram | 🔜 Sắp ra mắt | Thông báo thanh toán |
+| MB Bank | ✅ Hoạt động | Webhook BĐSD xác minh thanh toán tự động |
+| TPBank | ✅ Hoạt động | Cổng thanh toán chuyển khoản |
+| Lark/Feishu | ✅ Hoạt động | Thẻ thông báo rich với công cụ kéo thả |
+| WooCommerce | ✅ Hoạt động | Tích hợp cổng thanh toán native |
+| Slack | 🔜 Sắp ra | Thông báo thanh toán |
+| Telegram | 🔜 Sắp ra | Thông báo thanh toán |
 
 ---
 
-## 📝 Lịch sử thay đổi
+## 📂 Cấu trúc dự án
 
-Xem [CHANGELOG.md](./CHANGELOG.md) để biết toàn bộ lịch sử phát hành.
+```
+monkeypay/
+├── assets/
+│   ├── css/
+│   │   ├── admin/            # 18 file CSS partial module hóa
+│   │   │   ├── _tokens.css   # Design system tokens
+│   │   │   ├── _dashboard.css
+│   │   │   ├── _api-docs.css
+│   │   │   └── ...
+│   │   ├── admin.css         # @import dispatcher
+│   │   └── payment.css       # Style frontend thanh toán
+│   └── js/
+│       └── admin/            # JS module theo trang
+├── includes/
+│   ├── api/                  # REST API modules (6 file)
+│   ├── connections/          # Platform formatters (Lark, Slack)
+│   ├── class-monkeypay.php   # Plugin bootstrap
+│   └── ...
+├── templates/                # Template trang admin
+├── docs/
+│   └── ARCHITECTURE.md       # Tài liệu kiến trúc kỹ thuật
+├── CHANGELOG.md              # Lịch sử phát hành
+├── VERSION                   # Nguồn phiên bản chính
+└── monkeypay.php             # Entry point plugin
+```
+
+---
+
+## 📝 Nhật ký thay đổi
+
+Xem [CHANGELOG.md](./CHANGELOG.md) để biết lịch sử phát hành đầy đủ.
+
+**Mới nhất: v3.2.0** — Hệ thống API Key, Trang tài liệu API tích hợp, Thiết kế lại Dashboard UI, Nâng cấp bảo mật.
 
 ---
 
 ## 📄 Giấy phép
 
-Plugin được phân phối theo giấy phép [GPL-2.0-or-later](https://www.gnu.org/licenses/gpl-2.0.html).
+Plugin này được cấp phép theo [GPL-2.0-or-later](https://www.gnu.org/licenses/gpl-2.0.html).
 
 ---
 
-## 🤝 Tác giả
+## 🤝 Đội ngũ
 
 Phát triển bởi **[Monkey Tech 192](https://monkeytech192.vn/)**
+
+[⬆ Về đầu trang](#-monkeypay)

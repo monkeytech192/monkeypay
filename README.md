@@ -4,10 +4,12 @@
 
 **Automated Bank Transfer Payment Gateway for WordPress**
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](./CHANGELOG.md)
-[![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-21759B.svg)](https://wordpress.org/)
-[![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4.svg)](https://php.net/)
-[![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green.svg)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-3.2.0-6366f1.svg?style=flat-square)](./CHANGELOG.md)
+[![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-21759B.svg?style=flat-square&logo=wordpress)](https://wordpress.org/)
+[![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4.svg?style=flat-square&logo=php&logoColor=white)](https://php.net/)
+[![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green.svg?style=flat-square)](./LICENSE)
+
+Production-ready bank transfer payment gateway for WordPress — automated reconciliation, QR code generation, webhook notifications, and WooCommerce integration.
 
 [🇻🇳 Tiếng Việt](./README.vi.md)
 
@@ -15,56 +17,101 @@
 
 ---
 
-## 📋 Description
+## 📑 Table of Contents
 
-MonkeyPay automates bank transfer payment processing for WordPress sites. It integrates with **MB Bank** BDSD (Biến Động Số Dư) webhooks to instantly verify incoming payments — no manual checking required.
+- [Features](#-features)
+- [Architecture](#️-architecture)
+- [Getting Started](#-getting-started)
+- [REST API](#-rest-api)
+- [API Key Authentication](#-api-key-authentication)
+- [Supported Platforms](#-supported-platforms)
+- [Project Structure](#-project-structure)
+- [Changelog](#-changelog)
+- [License](#-license)
+- [Credits](#-credits)
 
-### Key Features
+---
 
-- 🏦 **Automated Payment Verification** — Real-time bank transaction matching via MB Bank webhook
-- 🛒 **WooCommerce Integration** — Native WC payment gateway with automatic order completion
-- 🔔 **Notification System** — Lark/Feishu webhook notifications with customizable card templates
-- 🎨 **Drag-Drop Card Builder** — Visual editor for notification card layouts
-- 🔗 **Extensible Connections** — Platform-agnostic webhook dispatcher (Slack, Telegram coming soon)
-- 🔒 **Enterprise Security** — HMAC webhook verification, nonce validation, capability checks
-- 🌐 **Multi-language** — Vietnamese and English support
+## ✨ Features
+
+| Category | Feature | Description |
+|----------|---------|-------------|
+| 🏦 **Payment** | Automated Verification | Real-time bank transaction matching via MB Bank BDSD webhook |
+| 🛒 **E-commerce** | WooCommerce Gateway | Native payment gateway with automatic order status updates |
+| 🔑 **API Keys** | Self-hosted Key System | `mkp_live_` prefixed keys with SHA-256 hashing, create/revoke/manage |
+| 📖 **Documentation** | Built-in API Docs | Interactive REST API reference with code examples and copy buttons |
+| 🔔 **Notifications** | Webhook Dispatcher | Platform-agnostic notifications (Lark/Feishu, Slack, Telegram) |
+| 🎨 **Card Builder** | Drag & Drop Editor | Visual notification card template designer with live preview |
+| 🔗 **Connections** | Multi-platform | Extensible connection system for any webhook-capable service |
+| 🔒 **Security** | Enterprise-grade | HMAC verification, nonce validation, rate limiting, capability checks |
+| 🌐 **i18n** | Multi-language | Vietnamese and English support |
 
 ---
 
 ## 🏗️ Architecture
 
-MonkeyPay v3.0.0 uses a **modular architecture**:
+MonkeyPay v3.2.0 uses a **modular architecture** with specialized REST API modules:
 
 ```
-REST API Router → 6 specialized modules (Settings, Transactions, Gateways, Auth, Bank, Connections)
-Connections → Platform-agnostic dispatcher → Formatters (Lark, Slack*, Telegram*)
-Integrations → Conditional loading (WooCommerce, Checkin Bridge)
+┌─────────────────────────────────────────────────────────┐
+│                    MonkeyPay Plugin                      │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  │
+│  │ Settings │  │   API    │  │Gateways  │  │  Bank  │  │
+│  │ Module   │  │  Keys    │  │ Module   │  │ Module │  │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └───┬────┘  │
+│       │              │             │             │       │
+│  ┌────▼──────────────▼─────────────▼─────────────▼────┐  │
+│  │              REST API Router (Thin)                │  │
+│  │           /wp-json/monkeypay/v1/*                  │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌──────────────┐  ┌─────────────┐  ┌───────────────┐   │
+│  │ Connections  │  │ WooCommerce │  │  Checkin MKT  │   │
+│  │  Dispatcher  │  │ Integration │  │    Bridge     │   │
+│  └──────┬───────┘  └─────────────┘  └───────────────┘   │
+│         │                                               │
+│  ┌──────▼───────────────────────────────┐               │
+│  │  Formatters (Lark · Slack · Telegram)│               │
+│  └──────────────────────────────────────┘               │
+└─────────────────────────────────────────────────────────┘
 ```
 
 > See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for full technical documentation.
 
 ---
 
-## 📦 Installation
+## 🚀 Getting Started
 
-### From ZIP
-1. Download the latest release
-2. Go to **WordPress Admin > Plugins > Add New > Upload Plugin**
-3. Upload the ZIP file and activate
+### Requirements
 
-### Manual
-1. Clone/copy to `wp-content/plugins/monkeypay/`
-2. Activate from **WordPress Admin > Plugins**
+- WordPress ≥ 5.8
+- PHP ≥ 7.4
+- MB Bank Internet Banking account (for payment verification)
 
----
+### Installation
 
-## ⚙️ Configuration
+#### From ZIP
+```bash
+# 1. Download the latest release
+# 2. WordPress Admin > Plugins > Add New > Upload Plugin
+# 3. Upload ZIP and activate
+```
+
+#### Manual
+```bash
+cd wp-content/plugins/
+git clone https://github.com/monkeytech192/monkeypay.git
+# Activate from WordPress Admin > Plugins
+```
+
+### Configuration
 
 1. Go to **MonkeyPay** in the WordPress admin sidebar
-2. Enter your **API Key** from [monkeytech192.vn](https://monkeytech192.vn)
-3. Configure MB Bank connection for payment verification
-4. (Optional) Set up Lark webhook for notifications
-5. (Optional) Enable WooCommerce gateway
+2. Enter your **Organization API Key** from [monkeytech192.vn](https://monkeytech192.vn)
+3. Configure payment gateways (MB Bank, TPBank, etc.)
+4. _(Optional)_ Set up Lark/Feishu webhook for notifications
+5. _(Optional)_ Enable WooCommerce payment gateway
 
 ---
 
@@ -72,14 +119,44 @@ Integrations → Conditional loading (WooCommerce, Checkin Bridge)
 
 All endpoints are under `/wp-json/monkeypay/v1/`:
 
-| Module | Endpoints | Auth |
-|--------|-----------|------|
-| Health | `GET /health` | Public |
-| Settings | `POST /settings` | Admin |
-| Transactions | `POST /transactions`, `GET /transactions/{id}` | API Key |
-| Gateways | `CRUD /gateways`, `GET /merchant-gateways` | Admin/Public |
-| Bank | `GET /bank/summary`, `GET /bank/history` | Admin |
-| Connections | `CRUD /connections`, `POST /connections/{id}/test` | Admin |
+| Module | Endpoint | Method | Auth |
+|--------|----------|--------|------|
+| Health | `/health` | `GET` | Public |
+| Transactions | `/transactions/{tx_id}` | `GET` | API Key |
+| Transactions | `/transactions` | `POST` | API Key |
+| Gateways | `/gateways` | `CRUD` | Admin |
+| Gateways | `/merchant-gateways` | `GET` | API Key |
+| Settings | `/settings` | `POST` | Admin |
+| Bank | `/bank/summary` | `GET` | Admin |
+| Bank | `/bank/history` | `GET` | Admin |
+| Connections | `/connections` | `CRUD` | Admin |
+| API Keys | `/api-keys` | `CRUD` | Admin |
+
+---
+
+## 🔐 API Key Authentication
+
+MonkeyPay uses self-hosted API keys with `mkp_live_` prefix format.
+
+### Creating Keys
+
+Navigate to **MonkeyPay > API Keys** in the admin panel to create and manage keys.
+
+### Using Keys
+
+**Recommended — Header:**
+```bash
+curl -X GET "https://yoursite.com/wp-json/monkeypay/v1/transactions/MKP_123" \
+  -H "X-Api-Key: mkp_live_your_key_here"
+```
+
+**Alternative — Query Parameter:**
+```bash
+curl -X GET "https://yoursite.com/wp-json/monkeypay/v1/transactions/MKP_123?api_key=mkp_live_your_key_here"
+```
+
+> [!WARNING]
+> Keep your API key secret. Never expose it in frontend code, public repositories, or URLs.
 
 ---
 
@@ -87,17 +164,50 @@ All endpoints are under `/wp-json/monkeypay/v1/`:
 
 | Platform | Status | Description |
 |----------|--------|-------------|
-| MB Bank | ✅ Active | BDSD webhook for payment verification |
-| Lark/Feishu | ✅ Active | Payment notification cards |
-| WooCommerce | ✅ Active | Payment gateway integration |
+| MB Bank | ✅ Active | BDSD webhook for automated payment verification |
+| TPBank | ✅ Active | Bank transfer gateway |
+| Lark/Feishu | ✅ Active | Rich notification cards with drag-drop builder |
+| WooCommerce | ✅ Active | Native payment gateway integration |
 | Slack | 🔜 Planned | Payment notifications |
 | Telegram | 🔜 Planned | Payment notifications |
+
+---
+
+## 📂 Project Structure
+
+```
+monkeypay/
+├── assets/
+│   ├── css/
+│   │   ├── admin/            # 18 modular CSS partials
+│   │   │   ├── _tokens.css   # Design system tokens
+│   │   │   ├── _dashboard.css
+│   │   │   ├── _api-docs.css
+│   │   │   └── ...
+│   │   ├── admin.css         # @import dispatcher
+│   │   └── payment.css       # Frontend payment styles
+│   └── js/
+│       └── admin/            # Page-specific JS modules
+├── includes/
+│   ├── api/                  # REST API modules (6 files)
+│   ├── connections/          # Platform formatters (Lark, Slack)
+│   ├── class-monkeypay.php   # Plugin bootstrap
+│   └── ...
+├── templates/                # Admin page templates
+├── docs/
+│   └── ARCHITECTURE.md       # Technical architecture docs
+├── CHANGELOG.md              # Release history
+├── VERSION                   # Version source of truth
+└── monkeypay.php             # Plugin entry point
+```
 
 ---
 
 ## 📝 Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for full release history.
+
+**Latest: v3.2.0** — API Key System, Built-in API Documentation, Dashboard UI redesign, Security enhancements.
 
 ---
 
@@ -110,3 +220,5 @@ This plugin is licensed under the [GPL-2.0-or-later](https://www.gnu.org/license
 ## 🤝 Credits
 
 Developed by **[Monkey Tech 192](https://monkeytech192.vn/)**
+
+[⬆ Back to Top](#-monkeypay)

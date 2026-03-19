@@ -164,16 +164,46 @@ class MonkeyPay_REST_Gateways {
     }
 
     /**
-     * Merchant-facing: list enabled gateways using API key.
-     * Called by Checkin plugin to fetch available gateways.
+     * Merchant-facing: list enabled gateways using local API key.
+     * Called by Checkin plugin / external apps to fetch available gateways.
+     *
+     * Accepts API key via:
+     *   - Header: X-Api-Key
+     *   - Query param: api_key
+     *
+     * Validates key locally via MonkeyPay_REST_API_Keys::validate_api_key().
      */
     public static function merchant_gateways( $request ) {
-        $api_key = $request->get_param( 'api_key' );
+        // Accept key from header or query param
+        $api_key = $request->get_header( 'X-Api-Key' );
+        if ( empty( $api_key ) ) {
+            $api_key = $request->get_param( 'api_key' );
+        }
+
+        if ( empty( $api_key ) ) {
+            return new WP_REST_Response( [
+                'success' => false,
+                'message' => 'API key is required. Pass via X-Api-Key header or api_key query param.',
+            ], 401 );
+        }
+
+        // Validate local API key
+        $key_record = MonkeyPay_REST_API_Keys::validate_api_key( $api_key );
+
+        if ( ! $key_record ) {
+            return new WP_REST_Response( [
+                'success' => false,
+                'message' => 'Invalid or revoked API key.',
+            ], 401 );
+        }
+
+        // Fetch gateways from server (same as admin list_gateways)
+        $server_api_key = get_option( 'monkeypay_api_key', '' );
 
         $response = wp_remote_get( self::get_api_url() . '/api/gateways', [
             'timeout' => 15,
             'headers' => [
-                'X-Api-Key' => $api_key,
+                'X-Api-Key' => $server_api_key,
             ],
         ] );
 
@@ -190,7 +220,7 @@ class MonkeyPay_REST_Gateways {
         if ( $code >= 400 ) {
             return new WP_REST_Response( [
                 'success' => false,
-                'message' => isset( $data['error'] ) ? $data['error'] : 'Invalid API key',
+                'message' => isset( $data['error'] ) ? $data['error'] : 'Failed to fetch gateways',
             ], $code );
         }
 

@@ -21,6 +21,7 @@ require_once MONKEYPAY_PLUGIN_DIR . 'includes/api/class-rest-gateways.php';
 require_once MONKEYPAY_PLUGIN_DIR . 'includes/api/class-rest-auth.php';
 require_once MONKEYPAY_PLUGIN_DIR . 'includes/api/class-rest-bank.php';
 require_once MONKEYPAY_PLUGIN_DIR . 'includes/api/class-rest-connections.php';
+require_once MONKEYPAY_PLUGIN_DIR . 'includes/api/class-rest-api-keys.php';
 
 class MonkeyPay_REST_API {
 
@@ -36,5 +37,6 @@ class MonkeyPay_REST_API {
         MonkeyPay_REST_Auth::register_routes();
         MonkeyPay_REST_Bank::register_routes();
         MonkeyPay_REST_Connections::register_routes();
+        MonkeyPay_REST_API_Keys::register_routes();
     }
 }

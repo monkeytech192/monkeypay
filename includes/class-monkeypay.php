@@ -181,6 +181,7 @@ class MonkeyPay {
 
         wp_localize_script( 'monkeypay-admin', 'monkeypayAdmin', [
             'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+            'adminUrl' => admin_url(),
             'restUrl'  => rest_url( 'monkeypay/v1/' ),
             'nonce'    => wp_create_nonce( 'wp_rest' ),
             'i18n'     => [
@@ -231,7 +232,7 @@ class MonkeyPay {
 
         // Map page slugs to module files
         $slug_map = [
-            'monkeypay'              => [ 'dashboard' => 'dashboard.js' ],
+            'monkeypay'              => [ 'dashboard' => 'dashboard.js', 'settings' => 'settings.js' ],
             'monkeypay-settings'     => [ 'settings'  => 'settings.js' ],
             'monkeypay-gateways'     => [ 'gateways'  => 'gateways.js' ],
             'monkeypay-onboarding'   => [ 'onboarding' => 'onboarding.js' ],
@@ -241,6 +242,8 @@ class MonkeyPay {
                 'connections'  => 'connections.js',
                 'card-builder' => 'card-builder.js',
             ],
+            'monkeypay-api-keys'    => [ 'api-keys' => 'api-keys.js' ],
+            'monkeypay-api-docs'    => [ 'api-docs' => 'api-docs.js' ],
         ];
 
         if ( isset( $slug_map[ $page ] ) ) {

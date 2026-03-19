@@ -5,6 +5,43 @@ All notable changes to MonkeyPay will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2025-03-20
+
+### Added
+- **API Key System**: Self-hosted API key generation with `mkp_live_` prefix format
+  - Create, revoke, and manage multiple API keys per organization
+  - Key prefix display with masked middle section for security
+  - Quick-copy functionality on dashboard pills and API keys table
+  - Editable key labels/notes inline
+- **API Documentation Page**: Built-in REST API docs at `MonkeyPay > Tài Liệu API`
+  - Sidebar navigation with grouped sections (Bắt đầu, Endpoints, Webhooks)
+  - Dark code blocks with language headers and copy buttons
+  - Endpoint badges (GET/POST) with color coding
+  - Request/response examples in side-by-side grid layout
+  - Security alert boxes (info/warning) for best practices
+- **Public REST Endpoints**: API-key-authenticated endpoints for external integrations
+  - `GET /transactions/{tx_id}` — Check transaction status
+  - `GET /merchant-gateways` — List active payment gateways
+
+### Changed
+- **Dashboard API Key Pills**: Redesigned from heavy green badges to minimal transparent pills with status dot and hover-to-copy
+- **API Keys Table**: Masked key display (`mkp_live_xxxx...****`) with one-click copy of full prefix
+- **Toast Notifications**: Unified error/success toast design with consistent styling across all admin pages
+
+### Fixed
+- Code blocks overflowing outside content container on API docs page
+- Toast notification z-index inconsistency between error and success states
+- API key creation error when attempting server-side generation (switched to client-side)
+- `line-height: true` CSS syntax error in API docs stylesheet
+
+### Security
+- API key authentication via `X-Api-Key` header (recommended) or `?api_key=` query parameter
+- Keys stored as SHA-256 hashes — full key shown only once at creation
+- Rate limiting on `POST /transactions` endpoint
+- Maximum 10 active API keys per site enforcement
+
+---
+
 ## [3.1.0] - 2025-03-19
 
 ### Added

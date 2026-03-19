@@ -33,6 +33,8 @@
 @import url('./admin/_pricing.css');
 @import url('./admin/_dashboard.css');
 @import url('./admin/_connections.css');
+@import url('./admin/_api-keys.css');
+@import url('./admin/_api-docs.css');
 
 /* ── 6. Overlays (Modals, Drawers) ────────────────── */
 @import url('./admin/_modals.css');

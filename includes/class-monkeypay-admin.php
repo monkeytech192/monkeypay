@@ -72,6 +72,26 @@ class MonkeyPay_Admin {
             [ $this, 'render_connections_page' ]
         );
 
+        // API Keys
+        add_submenu_page(
+            'monkeypay',
+            __( 'API Keys', 'monkeypay' ),
+            __( 'API Keys', 'monkeypay' ),
+            'manage_options',
+            'monkeypay-api-keys',
+            [ $this, 'render_api_keys_page' ]
+        );
+
+        // API Docs
+        add_submenu_page(
+            'monkeypay',
+            __( 'Tài Liệu API', 'monkeypay' ),
+            __( 'Tài Liệu API', 'monkeypay' ),
+            'manage_options',
+            'monkeypay-api-docs',
+            [ $this, 'render_api_docs_page' ]
+        );
+
         // Payment Gateways
         add_submenu_page(
             'monkeypay',
@@ -161,6 +181,22 @@ class MonkeyPay_Admin {
             return;
         }
         include MONKEYPAY_PLUGIN_DIR . 'templates/admin-account.php';
+    }
+
+    public function render_api_keys_page() {
+        if ( $this->needs_onboarding() ) {
+            include MONKEYPAY_PLUGIN_DIR . 'templates/admin-onboarding.php';
+            return;
+        }
+        include MONKEYPAY_PLUGIN_DIR . 'templates/admin-api-keys.php';
+    }
+
+    public function render_api_docs_page() {
+        if ( $this->needs_onboarding() ) {
+            include MONKEYPAY_PLUGIN_DIR . 'templates/admin-onboarding.php';
+            return;
+        }
+        include MONKEYPAY_PLUGIN_DIR . 'templates/admin-api-docs.php';
     }
 
     public function render_pricing_page() {
