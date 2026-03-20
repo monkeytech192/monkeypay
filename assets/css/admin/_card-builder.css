@@ -7,6 +7,51 @@
     width: 96%;
 }
 
+/* ─── Tab toggle Credit / Debit ─── */
+.mp-cb-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 24px 8px;
+    margin-top: 0;
+    border-top: 1px solid var(--mp-border, #e2e8f0);
+    background: var(--mp-card-bg, #ffffff);
+}
+
+.mp-cb-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mp-text-secondary, #64748b);
+    background: transparent;
+    border: 1px solid var(--mp-border, #e2e8f0);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.mp-cb-tab:hover {
+    color: var(--mp-text-primary, #1e293b);
+    border-color: var(--mp-text-secondary, #94a3b8);
+}
+
+.mp-cb-tab.is-active {
+    color: #ffffff;
+    background: var(--mp-accent, #3370ff);
+    border-color: var(--mp-accent, #3370ff);
+}
+
+.mp-cb-tab.is-active svg {
+    stroke: #ffffff;
+}
+
+.mp-cb-tab[data-mode="debit"].is-active {
+    background: #ef4444;
+    border-color: #ef4444;
+}
+
 .mp-cb-body {
     display: flex;
     gap: 24px;

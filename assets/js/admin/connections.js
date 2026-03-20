@@ -122,9 +122,15 @@
             } else {
                 window._mpCurrentCardTemplate = null;
             }
+            if (connData && connData.card_template_debit) {
+                window._mpCurrentCardTemplateDebit = connData.card_template_debit;
+            } else {
+                window._mpCurrentCardTemplateDebit = null;
+            }
         } else {
             $cbGroup.hide();
             window._mpCurrentCardTemplate = null;
+            window._mpCurrentCardTemplateDebit = null;
         }
 
         // Open with animation
@@ -230,8 +236,13 @@
         };
 
         // Inject card_template for Lark connections
-        if (platform === 'lark' && window._mpCurrentCardTemplate) {
-            data.card_template = window._mpCurrentCardTemplate;
+        if (platform === 'lark') {
+            if (window._mpCurrentCardTemplate) {
+                data.card_template = window._mpCurrentCardTemplate;
+            }
+            if (window._mpCurrentCardTemplateDebit) {
+                data.card_template_debit = window._mpCurrentCardTemplateDebit;
+            }
         }
 
         if (!data.webhook_url) {

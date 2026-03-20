@@ -242,6 +242,9 @@ class MonkeyPay {
             'apiUrl'         => rtrim( get_option( 'monkeypay_api_url', MONKEYPAY_API_URL ), '/' ),
             'nonce'          => wp_create_nonce( 'wp_rest' ),
             'authProvider'   => get_option( 'monkeypay_auth_provider', 'password' ),
+            'language'       => get_option( 'monkeypay_language', 'vi' ),
+            'timezone'       => get_option( 'monkeypay_timezone', 'Asia/Ho_Chi_Minh' ),
+            'darkMode'       => get_option( 'monkeypay_dark_mode', 'light' ),
             'i18n'           => [
                 'connecting'   => __( 'Đang kết nối...', 'monkeypay' ),
                 'connected'    => __( 'Đã kết nối', 'monkeypay' ),
@@ -251,11 +254,20 @@ class MonkeyPay {
             ],
         ] );
 
+        // ── JS — i18n dictionary + dark mode bootstrap (always loaded) ──
+        wp_enqueue_script(
+            'monkeypay-i18n',
+            $base_url . 'js/admin/i18n.js',
+            [ 'monkeypay-admin' ],
+            $version,
+            true
+        );
+
         // ── JS — Shared utilities (always loaded) ──
         wp_enqueue_script(
             'monkeypay-utils',
             $base_url . 'js/admin/utils.js',
-            [ 'jquery', 'monkeypay-admin' ],
+            [ 'jquery', 'monkeypay-admin', 'monkeypay-i18n' ],
             $version,
             true
         );
@@ -288,7 +300,7 @@ class MonkeyPay {
             // ── JS — Page-specific modules (only when NOT in onboarding) ──
             $page_modules = $this->get_page_modules( $hook );
             foreach ( $page_modules as $handle => $file ) {
-                $deps = [ 'jquery', 'monkeypay-admin', 'monkeypay-utils' ];
+                $deps = [ 'jquery', 'monkeypay-admin', 'monkeypay-i18n', 'monkeypay-utils' ];
                 if ( 'dashboard' === $handle ) {
                     $deps[] = 'chartjs';
                 }

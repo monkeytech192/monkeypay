@@ -129,3 +129,16 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
 }
+
+/* ═══════════════════════════════════════════════════
+   Page Exit Transition (nav prefetch)
+   ═══════════════════════════════════════════════════ */
+.monkeypay-admin-wrap {
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.monkeypay-admin-wrap.mp-page-exit {
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+}

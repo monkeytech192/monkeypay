@@ -1,11 +1,12 @@
 /**
- * MonkeyPay Admin — Dashboard Page v4.1
+ * MonkeyPay Admin — Dashboard Page v4.2
  *
  * Bank data, Chart.js cash flow, pill date filter,
  * transaction table, quick-action cards, modals, connection flow.
+ * Timezone-aware dates, hourly chart for single-day, i18n support.
  *
  * @package MonkeyPay
- * @since   4.1.0
+ * @since   4.2.0
  */
 
 (function ($) {
@@ -25,12 +26,11 @@
     }
 
     /**
-     * Get today's date in yyyy-mm-dd using Vietnam time (UTC+7).
+     * Get today's date in yyyy-mm-dd using configured timezone.
+     * Delegates to i18n module.
      */
     function vnToday() {
-        const now = new Date();
-        const vn = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-        return vn.toISOString().split('T')[0];
+        return MP.localToday ? MP.localToday() : new Date().toISOString().split('T')[0];
     }
 
     /**
@@ -45,48 +45,79 @@
     }
 
     /**
+     * Get a "now" Date object offset to configured timezone.
+     */
+    function tzNowDate() {
+        try {
+            var parts = new Intl.DateTimeFormat('en-CA', {
+                timeZone: MP.timezone || 'Asia/Ho_Chi_Minh',
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false,
+            }).formatToParts(new Date());
+
+            var obj = {};
+            parts.forEach(function (p) { obj[p.type] = p.value; });
+            return new Date(
+                parseInt(obj.year), parseInt(obj.month) - 1, parseInt(obj.day),
+                parseInt(obj.hour), parseInt(obj.minute), parseInt(obj.second)
+            );
+        } catch (e) {
+            return new Date();
+        }
+    }
+
+    /**
+     * Check if the current from/to filter is a single day.
+     */
+    function isSingleDayRange() {
+        var from = $('#mp-date-from').val();
+        var to   = $('#mp-date-to').val();
+        return from && to && from === to;
+    }
+
+    /**
      * Calculate date range from a pill range key.
+     * Uses timezone-aware "now" date.
      * Returns { from: 'yyyy-mm-dd', to: 'yyyy-mm-dd' }.
      */
     function getDateRange(rangeKey) {
-        const now = new Date();
-        const vn = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-        const today = ymd(vn);
+        const tz = tzNowDate();
+        const today = ymd(tz);
 
         switch (rangeKey) {
             case 'today':
                 return { from: today, to: today };
 
             case 'yesterday': {
-                const d = new Date(vn);
+                const d = new Date(tz);
                 d.setDate(d.getDate() - 1);
                 const yd = ymd(d);
                 return { from: yd, to: yd };
             }
 
             case '7days': {
-                const d = new Date(vn);
+                const d = new Date(tz);
                 d.setDate(d.getDate() - 6);
                 return { from: ymd(d), to: today };
             }
 
             case '30days': {
-                const d = new Date(vn);
+                const d = new Date(tz);
                 d.setDate(d.getDate() - 29);
                 return { from: ymd(d), to: today };
             }
 
             case 'this_week': {
-                // Monday as start of week
-                const d = new Date(vn);
+                const d = new Date(tz);
                 const day = d.getDay();
-                const diff = day === 0 ? 6 : day - 1; // Monday=0
+                const diff = day === 0 ? 6 : day - 1;
                 d.setDate(d.getDate() - diff);
                 return { from: ymd(d), to: today };
             }
 
             case 'last_week': {
-                const d = new Date(vn);
+                const d = new Date(tz);
                 const day = d.getDay();
                 const diff = day === 0 ? 6 : day - 1;
                 const thisMonday = new Date(d);
@@ -99,13 +130,13 @@
             }
 
             case 'this_month': {
-                const start = new Date(vn.getFullYear(), vn.getMonth(), 1);
+                const start = new Date(tz.getFullYear(), tz.getMonth(), 1);
                 return { from: ymd(start), to: today };
             }
 
             case 'last_month': {
-                const start = new Date(vn.getFullYear(), vn.getMonth() - 1, 1);
-                const end = new Date(vn.getFullYear(), vn.getMonth(), 0);
+                const start = new Date(tz.getFullYear(), tz.getMonth() - 1, 1);
+                const end = new Date(tz.getFullYear(), tz.getMonth(), 0);
                 return { from: ymd(start), to: ymd(end) };
             }
 
@@ -118,34 +149,10 @@
     var currentRange = 'today';
 
     /**
-     * Format raw transaction time to dd/mm/yy hh:mm:ss.
-     * Accepts ISO string, timestamp, or various date formats.
+     * Format raw transaction time — delegates to i18n module.
      */
     function formatTime(raw) {
-        if (!raw) return '—';
-
-        // If already in dd/mm/yyyy format from API, convert to dd/mm/yy
-        if (/^\d{2}\/\d{2}\/\d{4}/.test(raw)) {
-            var parts = raw.split(' ');
-            var datePart = parts[0].split('/');
-            var shortYear = datePart[2].substring(2);
-            var time = parts[1] || '';
-            return datePart[0] + '/' + datePart[1] + '/' + shortYear + (time ? ' ' + time : '');
-        }
-
-        try {
-            var d = new Date(raw);
-            if (isNaN(d.getTime())) return raw;
-            var dd = String(d.getDate()).padStart(2, '0');
-            var mm = String(d.getMonth() + 1).padStart(2, '0');
-            var yy = String(d.getFullYear()).substring(2);
-            var hh = String(d.getHours()).padStart(2, '0');
-            var mi = String(d.getMinutes()).padStart(2, '0');
-            var ss = String(d.getSeconds()).padStart(2, '0');
-            return dd + '/' + mm + '/' + yy + ' ' + hh + ':' + mi + ':' + ss;
-        } catch (e) {
-            return raw;
-        }
+        return MP.formatTxTime ? MP.formatTxTime(raw) : (raw || '—');
     }
 
     /**
@@ -205,53 +212,152 @@
     var cashFlowChart = null;
 
     /**
+     * Extract hour (HH) from a transaction date/time string.
+     * Handles "dd/mm/yyyy HH:MM:SS" and ISO formats.
+     */
+    function extractHour(raw) {
+        if (!raw) return '00';
+        // "dd/mm/yyyy HH:MM:SS" — time part after space
+        var spaceParts = raw.split(' ');
+        if (spaceParts.length >= 2) {
+            var timeBits = spaceParts[1].split(':');
+            return (timeBits[0] || '00').padStart(2, '0');
+        }
+        // ISO: try parsing with timezone
+        try {
+            var d = new Date(raw);
+            if (!isNaN(d.getTime())) {
+                var tz = MP.timezone || 'Asia/Ho_Chi_Minh';
+                var parts = new Intl.DateTimeFormat('en-GB', {
+                    timeZone: tz,
+                    hour: '2-digit',
+                    hour12: false,
+                }).formatToParts(d);
+                var hv = '00';
+                parts.forEach(function (p) { if (p.type === 'hour') hv = p.value; });
+                return hv.padStart(2, '0');
+            }
+        } catch (e) { /* ignore */ }
+        return '00';
+    }
+
+    /**
+     * Parse a raw date string (ISO or dd/mm/yyyy) into a normalized
+     * dateKey "YYYY-MM-DD" for bucketing, using the configured timezone.
+     */
+    function normalizeDateKey(raw) {
+        if (!raw) return '';
+        // Already dd/mm/yyyy format from API
+        if (/^\d{2}\/\d{2}\/\d{4}/.test(raw)) {
+            var bits = raw.split(' ')[0].split('/');
+            return bits[2] + '-' + bits[1] + '-' + bits[0];
+        }
+        // ISO timestamp
+        try {
+            var d = new Date(raw);
+            if (!isNaN(d.getTime())) {
+                var tz = MP.timezone || 'Asia/Ho_Chi_Minh';
+                var parts = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: tz,
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                }).formatToParts(d);
+                var y = '', m = '', dd = '';
+                parts.forEach(function (p) {
+                    if (p.type === 'year')  y  = p.value;
+                    if (p.type === 'month') m  = p.value;
+                    if (p.type === 'day')   dd = p.value;
+                });
+                return y + '-' + m + '-' + dd;
+            }
+        } catch (e) { /* ignore */ }
+        return raw.split('T')[0] || raw.split(' ')[0] || raw;
+    }
+
+    /**
+     * Format a dateKey (YYYY-MM-DD) into a short display label.
+     * Returns "dd/mm" for multi-day or "dd/mm/yy" if needed.
+     */
+    function formatShortDate(dateKey) {
+        if (!dateKey) return dateKey;
+        // YYYY-MM-DD → dd/mm
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+            var p = dateKey.split('-');
+            return p[2] + '/' + p[1];
+        }
+        // dd/mm/yyyy → dd/mm
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateKey)) {
+            return dateKey.substring(0, 5);
+        }
+        return dateKey;
+    }
+
+    /**
      * Build or update the Chart.js mixed bar+line chart.
+     * For single-day ranges: aggregates by HOUR (00h..23h).
+     * For multi-day ranges: aggregates by DATE (dd/mm).
      * @param {Array} txs - raw transactions array
      */
     function updateChart(txs) {
         var canvas = document.getElementById('mp-cashflow-chart');
         if (!canvas || typeof Chart === 'undefined') return;
 
-        // Aggregate by date
-        var dateMap = {};
-        (txs || []).forEach(function (tx) {
-            var rawDate = tx.transactionDate || tx.postDate || '';
-            var dateKey = rawDate.split(' ')[0] || rawDate; // Take date part
-            if (!dateKey) return;
+        // Swap skeleton → canvas
+        $('#mp-chart-skeleton').hide();
+        $(canvas).show();
 
-            if (!dateMap[dateKey]) {
-                dateMap[dateKey] = { credit: 0, debit: 0 };
-            }
-            var credit = parseFloat(tx.creditAmount || 0);
-            var debit = parseFloat(tx.debitAmount || 0);
-            dateMap[dateKey].credit += credit;
-            dateMap[dateKey].debit += debit;
-        });
+        var singleDay = isSingleDayRange();
+        var bucketMap = {};
 
-        // Sort dates
-        var labels = Object.keys(dateMap).sort();
-        var credits = labels.map(function (d) { return dateMap[d].credit; });
-        var debits = labels.map(function (d) { return dateMap[d].debit; });
-        var net = labels.map(function (d) { return dateMap[d].credit - dateMap[d].debit; });
+        if (singleDay) {
+            // Pre-fill all 24 hours
+            for (var h = 0; h < 24; h++) {
+                var hKey = String(h).padStart(2, '0');
+                bucketMap[hKey] = { credit: 0, debit: 0 };
+            }
 
-        // Format short labels
-        var shortLabels = labels.map(function (d) {
-            // Try: dd/mm/yyyy or yyyy-mm-dd
-            if (/^\d{2}\/\d{2}\/\d{4}$/.test(d)) {
-                return d.substring(0, 5); // dd/mm
-            }
-            if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
-                var parts = d.split('-');
-                return parts[2] + '/' + parts[1]; // dd/mm
-            }
-            return d;
-        });
+            (txs || []).forEach(function (tx) {
+                var rawDate = tx.transactionDate || tx.postDate || '';
+                var hour = extractHour(rawDate);
+                if (!bucketMap[hour]) bucketMap[hour] = { credit: 0, debit: 0 };
+                bucketMap[hour].credit += parseFloat(tx.creditAmount || 0);
+                bucketMap[hour].debit  += parseFloat(tx.debitAmount || 0);
+            });
+        } else {
+            // Aggregate by date (normalize to YYYY-MM-DD via timezone)
+            (txs || []).forEach(function (tx) {
+                var rawDate = tx.transactionDate || tx.postDate || '';
+                var dateKey = normalizeDateKey(rawDate);
+                if (!dateKey) return;
+
+                if (!bucketMap[dateKey]) bucketMap[dateKey] = { credit: 0, debit: 0 };
+                bucketMap[dateKey].credit += parseFloat(tx.creditAmount || 0);
+                bucketMap[dateKey].debit  += parseFloat(tx.debitAmount || 0);
+            });
+        }
+
+        // Sort keys
+        var labels = Object.keys(bucketMap).sort();
+        var credits = labels.map(function (k) { return bucketMap[k].credit; });
+        var debits  = labels.map(function (k) { return bucketMap[k].debit; });
+        var net     = labels.map(function (k) { return bucketMap[k].credit - bucketMap[k].debit; });
+
+        // Format short labels for X-axis
+        var shortLabels;
+        if (singleDay) {
+            shortLabels = labels.map(function (h) { return h + ':00'; });
+        } else {
+            shortLabels = labels.map(function (d) {
+                return formatShortDate(d);
+            });
+        }
 
         var chartData = {
             labels: shortLabels,
             datasets: [
                 {
-                    label: 'Tiền vào',
+                    label: MP.__('credit'),
                     type: 'bar',
                     data: credits,
                     backgroundColor: 'rgba(16, 185, 129, 0.65)',
@@ -261,7 +367,7 @@
                     order: 2,
                 },
                 {
-                    label: 'Tiền ra',
+                    label: MP.__('debit'),
                     type: 'bar',
                     data: debits,
                     backgroundColor: 'rgba(239, 68, 68, 0.5)',
@@ -271,13 +377,13 @@
                     order: 2,
                 },
                 {
-                    label: 'Dòng tiền ròng',
+                    label: MP.__('net_cashflow'),
                     type: 'line',
                     data: net,
                     borderColor: 'rgba(6, 182, 212, 1)',
                     backgroundColor: 'rgba(6, 182, 212, 0.08)',
                     borderWidth: 2,
-                    pointRadius: 3,
+                    pointRadius: singleDay ? 2 : 3,
                     pointBackgroundColor: '#fff',
                     pointBorderColor: 'rgba(6, 182, 212, 1)',
                     pointBorderWidth: 2,
@@ -327,6 +433,9 @@
                     ticks: {
                         font: { size: 11 },
                         color: '#94a3b8',
+                        maxRotation: singleDay ? 0 : 45,
+                        autoSkip: true,
+                        maxTicksLimit: singleDay ? 24 : 15,
                     },
                 },
                 y: {
@@ -350,6 +459,7 @@
 
         if (cashFlowChart) {
             cashFlowChart.data = chartData;
+            cashFlowChart.options = chartOpts;
             cashFlowChart.update('none');
         } else {
             cashFlowChart = new Chart(canvas.getContext('2d'), {
@@ -371,8 +481,13 @@
         const to = toApiDate(toVal);
         const qs = from && to ? `?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}` : '';
 
-        // Show loading
+        // Show loading — skeleton states
         $('#mp-refresh-data').addClass('loading');
+        $('#mp-chart-skeleton').show();
+        $('#mp-cashflow-chart').hide();
+        $('#mp-tx-loading').show();
+        $('#mp-tx-table').hide();
+        $('#mp-tx-empty').hide();
 
         try {
             // Fetch summary (balance + stats)
@@ -423,7 +538,7 @@
                 if (orgName) {
                     $('#mp-card-org').text(orgName);
                 } else {
-                    $('#mp-card-org').text('Chưa thiết lập');
+                    $('#mp-card-org').text(MP.__('not_setup'));
                 }
 
                 // Plan badge
@@ -449,7 +564,7 @@
                         $('#mp-card-expiry').text(planExpiry);
                     }
                 } else {
-                    $('#mp-card-expiry').text('Vĩnh viễn');
+                    $('#mp-card-expiry').text(MP.__('forever'));
                 }
 
                 // API Key masked
@@ -457,7 +572,7 @@
                     const masked = apiKey.substring(0, 6) + ' •••• ' + apiKey.substring(apiKey.length - 4);
                     $('#mp-card-apikey').text(masked);
                 } else {
-                    $('#mp-card-apikey').text('Chưa có API Key');
+                    $('#mp-card-apikey').text(MP.__('no_api_key'));
                 }
             }
         } catch (err) {
@@ -930,8 +1045,8 @@
     function setNodeStatus(nodeId, status) {
         var $status = $('#' + nodeId + '-status');
         var dotClass = 'mp-status-dot mp-status-dot--' + status;
-        var label = status === 'ok' ? 'OK' : status === 'error' ? 'Lỗi' : '...';
-        $status.html('<span class="' + dotClass + '"></span> ' + label);
+        // Badge-only: just the dot, no text label
+        $status.html('<span class="' + dotClass + '"></span>');
     }
 
     function setLineStatus(lineId, status) {
@@ -1024,6 +1139,9 @@
     // ═══════════════════════════════════════════════════
 
     $(document).ready(function () {
+        // Apply i18n translations to DOM elements
+        if (MP.applyI18n) MP.applyI18n();
+
         // Copy buttons (global)
         initCopyButtons();
 

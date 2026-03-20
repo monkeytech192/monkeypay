@@ -71,6 +71,40 @@ class MonkeyPay_Lark_Formatter {
     }
 
     /**
+     * Default template for payment_sent (debit) event.
+     *
+     * @return array
+     */
+    public static function get_default_debit_template() {
+        return [
+            'header_title'    => '💸 Chuyển tiền',
+            'header_color'    => 'red',
+            'elements'        => [
+                [
+                    'type'    => 'text',
+                    'content' => '**Số tiền: -{amount} VNĐ**',
+                ],
+                [
+                    'type' => 'hr',
+                ],
+                [
+                    'type'   => 'fields',
+                    'fields' => [
+                        [ 'label' => 'Ngân hàng',    'value' => '{bank_name}' ],
+                        [ 'label' => 'Số TK',        'value' => '{account_no}' ],
+                        [ 'label' => 'Nội dung CK',  'value' => '{payment_note}' ],
+                        [ 'label' => 'Thời gian',    'value' => '{matched_at}' ],
+                    ],
+                ],
+                [
+                    'type'    => 'note',
+                    'content' => 'TX: {tx_id}',
+                ],
+            ],
+        ];
+    }
+
+    /**
      * Format event data into Lark webhook payload.
      *
      * @param string     $event    Event name
@@ -78,11 +112,20 @@ class MonkeyPay_Lark_Formatter {
      * @param array|null $template Optional custom template from card builder
      * @return array Lark webhook payload
      */
-    public function format( $event, $data, $template = null ) {
+    public function format( $event, $data, $template = null, $template_debit = null ) {
         // Prepare variable map
         $vars = $this->build_variable_map( $data );
 
-        // Use custom template or fallback to defaults
+        // For debit events, use debit template if available
+        if ( $event === 'payment_sent' ) {
+            if ( ! empty( $template_debit ) && ! empty( $template_debit['elements'] ) ) {
+                return $this->format_from_template( $template_debit, $vars );
+            }
+            // Fallback to legacy hardcoded debit format
+            return $this->format_payment_sent( $data );
+        }
+
+        // For credit events, use credit template if available
         if ( ! empty( $template ) && ! empty( $template['elements'] ) ) {
             return $this->format_from_template( $template, $vars );
         }
@@ -91,9 +134,6 @@ class MonkeyPay_Lark_Formatter {
         switch ( $event ) {
             case 'payment_received':
                 return $this->format_payment_received( $data );
-
-            case 'payment_sent':
-                return $this->format_payment_sent( $data );
 
             default:
                 return $this->format_generic( $event, $data );

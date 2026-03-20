@@ -40,3 +40,9 @@
 /* ── 6. Overlays (Modals, Drawers) ────────────────── */
 @import url('./admin/_modals.css');
 @import url('./admin/_card-builder.css');
+
+/* ── 7. Display Settings & Dark Mode ─────────────── */
+@import url('./admin/_display-settings.css');
+
+/* ── 8. Dark Theme — Component Overrides ─────────── */
+@import url('./admin/_dark-theme.css');

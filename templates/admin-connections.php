@@ -238,6 +238,17 @@ $platform_icons = [
             </button>
         </div>
 
+        <div class="mp-cb-tabs" id="mp-cb-tabs">
+            <button type="button" class="mp-cb-tab is-active" data-mode="credit">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px;"><path d="M8 3v10M3 8l5-5 5 5"/></svg>
+                <?php esc_html_e( 'Tiền vào (Credit)', 'monkeypay' ); ?>
+            </button>
+            <button type="button" class="mp-cb-tab" data-mode="debit">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px;"><path d="M8 13V3M13 8l-5 5-5-5"/></svg>
+                <?php esc_html_e( 'Tiền ra (Debit)', 'monkeypay' ); ?>
+            </button>
+        </div>
+
         <div class="mp-cb-body">
             <!-- Left: Builder -->
             <div class="mp-cb-builder">

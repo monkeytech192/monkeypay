@@ -29,7 +29,25 @@
     const $previewCard = $('#mp-cb-preview-card');
     const $headerTitle = $('#mp-cb-header-title');
     const $palette     = $('#mp-cb-palette');
-    const defaultTpl   = window.mpDefaultTemplate || {};
+    const defaultTpl      = window.mpDefaultTemplate || {};
+    const defaultDebitTpl = window.mpDefaultDebitTemplate || {
+        header_title: '💸 Chuyển tiền',
+        header_color: 'red',
+        elements: [
+            { type: 'text', content: '**Số tiền: -{amount} VNĐ**' },
+            { type: 'hr' },
+            { type: 'fields', fields: [
+                { label: 'Ngân hàng', value: '{bank_name}' },
+                { label: 'Số TK', value: '{account_no}' },
+                { label: 'Nội dung CK', value: '{payment_note}' },
+                { label: 'Thời gian', value: '{matched_at}' },
+            ]},
+            { type: 'note', content: 'TX: {tx_id}' },
+        ]
+    };
+
+    // Current tab mode: 'credit' or 'debit'
+    let currentMode = 'credit';
 
     // Sample variables for preview
     const sampleVars = {
@@ -451,21 +469,56 @@
 
     // Open Card Builder
     $('#mp-pf-open-card-builder').on('click', function () {
+        currentMode = 'credit';
+        $('.mp-cb-tab').removeClass('is-active');
+        $('.mp-cb-tab[data-mode="credit"]').addClass('is-active');
         loadTemplate(window._mpCurrentCardTemplate);
         openModal($builderModal);
     });
 
+    // Tab switching
+    $(document).on('click', '.mp-cb-tab', function () {
+        var newMode = $(this).data('mode');
+        if (newMode === currentMode) return;
+
+        // Save current canvas to the right global var
+        var serialized = serializeTemplate();
+        if (currentMode === 'credit') {
+            window._mpCurrentCardTemplate = serialized;
+        } else {
+            window._mpCurrentCardTemplateDebit = serialized;
+        }
+
+        // Switch mode
+        currentMode = newMode;
+        $('.mp-cb-tab').removeClass('is-active');
+        $(this).addClass('is-active');
+
+        // Load the other template
+        if (currentMode === 'credit') {
+            loadTemplate(window._mpCurrentCardTemplate);
+        } else {
+            loadTemplate(window._mpCurrentCardTemplateDebit || defaultDebitTpl);
+        }
+    });
+
     // Apply
     $('#mp-cb-apply').on('click', function () {
-        window._mpCurrentCardTemplate = serializeTemplate();
+        var serialized = serializeTemplate();
+        if (currentMode === 'credit') {
+            window._mpCurrentCardTemplate = serialized;
+        } else {
+            window._mpCurrentCardTemplateDebit = serialized;
+        }
         closeModal($builderModal);
-        showToast('Đã áp dụng template!', 'success');
+        showToast('Đã áp dụng template ' + (currentMode === 'credit' ? 'Tiền vào' : 'Tiền ra') + '!', 'success');
     });
 
     // Reset
     $('#mp-cb-reset').on('click', function () {
-        loadTemplate(defaultTpl);
-        showToast('Đã reset về mặc định', 'info');
+        var resetTpl = currentMode === 'credit' ? defaultTpl : defaultDebitTpl;
+        loadTemplate(resetTpl);
+        showToast('Đã reset về mặc định (' + (currentMode === 'credit' ? 'Tiền vào' : 'Tiền ra') + ')', 'info');
     });
 
     // Cancel / Close

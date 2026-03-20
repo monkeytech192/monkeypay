@@ -4,7 +4,7 @@
 
 **Automated Bank Transfer Payment Gateway for WordPress**
 
-[![Version](https://img.shields.io/badge/version-3.3.0-6366f1.svg?style=flat-square)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.3.1-6366f1.svg?style=flat-square)](./CHANGELOG.md)
 [![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-21759B.svg?style=flat-square&logo=wordpress)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4.svg?style=flat-square&logo=php&logoColor=white)](https://php.net/)
 [![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green.svg?style=flat-square)](./LICENSE)

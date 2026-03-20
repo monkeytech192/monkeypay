@@ -158,6 +158,7 @@ class MonkeyPay_Connections {
             'secret_key'    => sanitize_text_field( $data['secret_key'] ?? '' ),
             'events'        => $this->sanitize_events( $data['events'] ?? [] ),
             'card_template' => $data['card_template'] ?? null,
+            'card_template_debit' => $data['card_template_debit'] ?? null,
             'enabled'       => (bool) ( $data['enabled'] ?? true ),
             'created_at'    => current_time( 'mysql' ),
             'updated_at'    => current_time( 'mysql' ),
@@ -187,6 +188,7 @@ class MonkeyPay_Connections {
                 if ( isset( $data['secret_key'] ) )    $conn['secret_key']    = sanitize_text_field( $data['secret_key'] );
                 if ( isset( $data['events'] ) )        $conn['events']        = $this->sanitize_events( $data['events'] );
                 if ( array_key_exists( 'card_template', $data ) ) $conn['card_template'] = $data['card_template'];
+                if ( array_key_exists( 'card_template_debit', $data ) ) $conn['card_template_debit'] = $data['card_template_debit'];
                 if ( isset( $data['enabled'] ) )       $conn['enabled']       = (bool) $data['enabled'];
                 $conn['updated_at'] = current_time( 'mysql' );
 
@@ -315,9 +317,10 @@ class MonkeyPay_Connections {
      * Format payload for Lark webhook bot.
      */
     private function format_lark_payload( $event, $data, $conn = null ) {
-        $formatter = new MonkeyPay_Lark_Formatter();
-        $template  = $conn['card_template'] ?? null;
-        return $formatter->format( $event, $data, $template );
+        $formatter      = new MonkeyPay_Lark_Formatter();
+        $template       = $conn['card_template'] ?? null;
+        $template_debit = $conn['card_template_debit'] ?? null;
+        return $formatter->format( $event, $data, $template, $template_debit );
     }
 
     /**

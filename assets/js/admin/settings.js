@@ -316,6 +316,121 @@
         }
     }
 
+    // ─── Save Display Settings ─────────────────────
+
+    async function saveDisplaySettings(e) {
+        const btn = document.getElementById('monkeypay-save-display');
+        if (!btn) return;
+        btn.classList.add('loading');
+
+        const prevLang = MP.lang;
+        // Read from pills (Language + Appearance) and select (Timezone)
+        function getActivePillValue(field) {
+            var container = document.querySelector('.mp-settings-pills[data-mp-field="' + field + '"]');
+            if (!container) return null;
+            var active = container.querySelector('.mp-settings-pill--active');
+            return active ? active.dataset.mpValue : null;
+        }
+
+        const settings = {
+            monkeypay_timezone:  document.getElementById('monkeypay_timezone')?.value || 'Asia/Ho_Chi_Minh',
+            monkeypay_language:  getActivePillValue('monkeypay_language') || MP.lang || 'vi',
+            monkeypay_dark_mode: getActivePillValue('monkeypay_dark_mode') || MP.darkMode || 'light',
+        };
+
+        try {
+            const res = await fetch(`${MP.restUrl}settings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': MP.nonce,
+                },
+                body: JSON.stringify(settings),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                // Apply changes live
+                MP.timezone = settings.monkeypay_timezone;
+                MP.lang      = settings.monkeypay_language;
+                MP.darkMode  = settings.monkeypay_dark_mode;
+
+                // Apply dark mode immediately
+                if (MP.applyDarkMode) MP.applyDarkMode();
+
+                // Apply i18n client-side (no reload)
+                if (MP.applyI18n) MP.applyI18n();
+
+                MP.showToast(MP.__('saved'), 'success');
+            } else {
+                throw new Error(data.message || 'Save failed');
+            }
+        } catch (err) {
+            MP.showToast(err.message || MP.__('error'), 'error');
+        } finally {
+            btn.classList.remove('loading');
+        }
+    }
+
+    // ─── Quick Display Settings (Dashboard) ─────────
+
+    /**
+     * Save a single display setting via AJAX (no save button needed).
+     * @param {string} key    - e.g. 'monkeypay_dark_mode'
+     * @param {string} value  - e.g. 'dark'
+     * @param {HTMLElement} btn - the button clicked
+     */
+    async function quickSaveDisplaySetting(key, value, btn) {
+        // Mark all siblings inactive, this one active
+        const toggle = btn.closest('.mp-slide-toggle');
+        if (toggle) {
+            toggle.querySelectorAll('.mp-slide-toggle__opt').forEach(function (b) {
+                b.classList.remove('mp-slide-toggle__opt--active');
+            });
+        }
+        btn.classList.add('mp-slide-toggle__opt--active');
+        if (toggle) toggle.classList.add('mp-slide-toggle--saving');
+
+        const settings = {};
+        settings[key] = value;
+
+        try {
+            const res = await fetch(`${MP.restUrl}settings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': MP.nonce,
+                },
+                body: JSON.stringify(settings),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                // Apply live
+                if (key === 'monkeypay_dark_mode') {
+                    MP.darkMode = value;
+                    if (MP.applyDarkMode) MP.applyDarkMode();
+                } else if (key === 'monkeypay_language') {
+                    // Apply language change client-side (no reload)
+                    MP.lang = value;
+                    if (MP.applyI18n) MP.applyI18n();
+                }
+
+                MP.showToast(MP.__('saved'), 'success');
+            } else {
+                throw new Error(data.message || 'Save failed');
+            }
+        } catch (err) {
+            MP.showToast(err.message || MP.__('error'), 'error');
+            // Revert active state
+            btn.classList.remove('mp-slide-toggle__opt--active');
+        } finally {
+            if (toggle) toggle.classList.remove('mp-slide-toggle--saving');
+        }
+    }
+
     // ─── Init ───────────────────────────────────────
 
     $(document).ready(function () {
@@ -331,6 +446,43 @@
         // Integrations page — toggle handlers
         $(document).on('change', '.monkeypay-integration-toggle', handleIntegrationToggle);
 
+        // Display settings save
+        $('#monkeypay-save-display').on('click', saveDisplaySettings);
+
+        // Settings page pill toggle handlers
+        $(document).on('click', '.mp-settings-pill', function () {
+            var $pill = $(this);
+            var $container = $pill.closest('.mp-settings-pills');
+            var field = $container.data('mp-field');
+            var value = $pill.data('mp-value');
+
+            // Update active state
+            $container.find('.mp-settings-pill').removeClass('mp-settings-pill--active');
+            $pill.addClass('mp-settings-pill--active');
+
+            // Live preview for dark mode
+            if (field === 'monkeypay_dark_mode') {
+                MP.darkMode = value;
+                if (MP.applyDarkMode) MP.applyDarkMode();
+            }
+
+            // Live preview for language
+            if (field === 'monkeypay_language') {
+                MP.lang = value;
+                if (MP.applyI18n) MP.applyI18n();
+            }
+        });
+
+        // Dashboard quick display settings — click handlers
+        $(document).on('click', '.mp-slide-toggle__opt[data-mp-value]', function () {
+            var toggle = this.closest('.mp-slide-toggle');
+            var key    = toggle ? toggle.dataset.mpKey : null;
+            var value  = this.dataset.mpValue;
+            if (key && value) {
+                quickSaveDisplaySetting(key, value, this);
+            }
+        });
+
         // Auto-test on Dashboard if on that page
         if ($('#monkeypay-status-badge').length) {
             setTimeout(testConnection, 800);
@@ -340,6 +492,83 @@
         if ($('#monkeypay-usage-card').length) {
             loadUsageStats();
         }
+
+        // Apply i18n to data-i18n elements
+        if (MP.applyI18n) {
+            MP.applyI18n();
+        }
+
+        // ─── Timezone Custom Dropdown ──────────────────
+        (function initTimezoneDropdown() {
+            var $dd     = $('#mp-tz-dropdown');
+            var $trigger = $('#mp-tz-trigger');
+            var $panel  = $('#mp-tz-panel');
+            var $search = $('#mp-tz-search');
+            var $list   = $('#mp-tz-list');
+            var $hidden = $('#monkeypay_timezone');
+
+            if (!$dd.length) return;
+
+            // Toggle open/close
+            $trigger.on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var isOpen = $dd.hasClass('mp-tz-dropdown--open');
+                $dd.toggleClass('mp-tz-dropdown--open');
+                if (!isOpen) {
+                    $search.val('').trigger('input');
+                    $search.focus();
+                }
+            });
+
+            // Search filter
+            $search.on('input', function () {
+                var q = $(this).val().toLowerCase();
+                $list.find('.mp-tz-dropdown__option').each(function () {
+                    var text = $(this).text().toLowerCase();
+                    $(this).toggleClass('mp-tz-dropdown__option--hidden', q.length > 0 && text.indexOf(q) === -1);
+                });
+            });
+
+            // Prevent search input from closing dropdown
+            $search.on('click', function (e) { e.stopPropagation(); });
+
+            // Select option
+            $list.on('click', '.mp-tz-dropdown__option', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var val   = $(this).data('value');
+                var label = $(this).text().trim();
+
+                // Update hidden input
+                $hidden.val(val);
+
+                // Update trigger label
+                $dd.find('.mp-tz-dropdown__value').text(label);
+
+                // Update active state
+                $list.find('.mp-tz-dropdown__option').removeClass('mp-tz-dropdown__option--active');
+                $(this).addClass('mp-tz-dropdown__option--active');
+
+                // Close
+                $dd.removeClass('mp-tz-dropdown--open');
+            });
+
+            // Close on outside click
+            $(document).on('click', function (e) {
+                if (!$dd[0].contains(e.target)) {
+                    $dd.removeClass('mp-tz-dropdown--open');
+                }
+            });
+
+            // Close on Escape
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    $dd.removeClass('mp-tz-dropdown--open');
+                }
+            });
+        })();
     });
 
 })(jQuery);
+

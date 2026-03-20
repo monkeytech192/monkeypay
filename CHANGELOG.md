@@ -5,6 +5,31 @@ All notable changes to MonkeyPay will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.1] - 2025-03-21
+
+### Added
+- **Debit (Outgoing) Notification Template**: Lark notifications now support separate card templates for incoming (credit) and outgoing (debit) transactions
+  - Default debit template with "💸 Chuyển tiền" header, red color scheme
+  - `get_default_debit_template()` with auto-routing in Lark formatter based on event type
+- **Card Builder Tab Toggle**: Credit/Debit pill-style tabs in the card builder modal
+  - Auto-save canvas when switching tabs, independent template editing per mode
+  - Debit tab uses red accent, Credit tab uses blue accent
+  - Full dark mode support for tab toggle
+- **Dashboard i18n System**: Centralized `i18n.js` module for admin interface translations
+  - Bilingual support (Vietnamese/English) for dashboard, transactions, connections pages
+  - Language switcher in global header with `localStorage` persistence
+
+### Changed
+- **Lark Formatter**: `format()` method now accepts 4 parameters (`$event`, `$data`, `$credit_tpl`, `$debit_tpl`) — auto-selects correct template based on event type
+- **Connections Manager**: Stores and transmits `card_template_debit` alongside `card_template` for Lark connections
+- **Card Builder UX**: Apply/Reset actions now display context-aware messages ("Tiền vào" / "Tiền ra")
+- **Global Header**: Refactored to partial template (`partials/global-header.php`) for DRY reuse across all admin pages
+
+### Fixed
+- Card builder tab toggle spacing — added `border-top` separator and `padding-top` for visual clarity
+
+---
+
 ## [3.3.0] - 2025-03-21
 
 ### Added

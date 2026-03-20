@@ -1,0 +1,656 @@
+/**
+ * MonkeyPay — Display Settings Card + Dark Mode
+ *
+ * Uses data-mp-theme attribute set by i18n.js applyDarkMode().
+ *
+ * @package MonkeyPay
+ * @since   4.2.1
+ */
+
+/* ═══ Display Settings Card Icon (match primary color) ═══ */
+
+.monkeypay-card__header .monkeypay-card__icon--display {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+/* ═══ Display Grid ═══════════════════════════════ */
+
+.monkeypay-display-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 0 24px 24px;
+}
+
+.monkeypay-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.monkeypay-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--mp-text-primary, #1e293b);
+}
+
+/* Select — match existing .monkeypay-input styling */
+.monkeypay-select {
+    width: 100%;
+    padding: 10px 36px 10px 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    font-family: inherit;
+    border: 1.5px solid var(--mp-border-color, #e2e8f0);
+    border-radius: 10px;
+    background-color: var(--mp-input-bg, #fff);
+    color: var(--mp-text-primary, #1e293b);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+
+    /* Custom arrow */
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.monkeypay-select:hover {
+    border-color: var(--mp-primary, #10b981);
+}
+
+.monkeypay-select:focus {
+    border-color: var(--mp-primary, #10b981);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* ═══ Dashboard Quick Settings ═══════════════════ */
+
+.mp-quick-display {
+    margin-top: 12px;
+}
+
+.mp-quick-display__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--mp-text-secondary, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 10px 0;
+    padding: 0;
+}
+
+.mp-quick-display__row {
+    display: flex;
+    gap: 8px;
+}
+
+/* ═══ Slide Toggle (emoji-based) ═════════════════ */
+
+.mp-slide-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: var(--mp-card-bg, #f1f5f9);
+    border: 1.5px solid var(--mp-border-color, #e2e8f0);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 0;
+    flex-shrink: 0;
+}
+
+.mp-slide-toggle__opt {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    border-radius: 999px;
+    transition: transform 0.15s ease, opacity 0.2s ease;
+    padding: 0;
+    opacity: 0.5;
+}
+
+.mp-slide-toggle__opt:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+.mp-slide-toggle__opt--active {
+    opacity: 1;
+}
+
+/* Sliding thumb */
+.mp-slide-toggle__thumb {
+    position: absolute;
+    z-index: 1;
+    top: 3px;
+    left: 3px;
+    width: 36px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--mp-primary, #10b981);
+    opacity: 0.18;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+/* Thumb position when 2nd option is active */
+.mp-slide-toggle .mp-slide-toggle__opt:last-of-type.mp-slide-toggle__opt--active ~ .mp-slide-toggle__thumb,
+.mp-slide-toggle:has(.mp-slide-toggle__opt:nth-child(2).mp-slide-toggle__opt--active) .mp-slide-toggle__thumb {
+    transform: translateX(36px);
+}
+
+.mp-slide-toggle.mp-slide-toggle--saving {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* ═══ Dark Mode Overrides ═══════════════════════ */
+/* NOTE: attribute is data-mp-theme, set by i18n.js */
+
+[data-mp-theme="dark"] {
+    --mp-bg:              #0f172a;
+    --mp-card-bg:         #1e293b;
+    --mp-text-primary:    #f1f5f9;
+    --mp-text-secondary:  #94a3b8;
+    --mp-border-color:    #334155;
+    --mp-input-bg:        #1e293b;
+    --mp-primary:         #34d399;
+    --mp-primary-hover:   #10b981;
+    --mp-success:         #34d399;
+    --mp-danger:          #f87171;
+}
+
+[data-mp-theme="dark"] .monkeypay-admin-wrap {
+    background-color: var(--mp-bg);
+}
+
+[data-mp-theme="dark"] .monkeypay-card {
+    background-color: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-card__header h2,
+[data-mp-theme="dark"] .monkeypay-card__header h3 {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-card__subtitle {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-select {
+    background-color: var(--mp-input-bg);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-primary);
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+[data-mp-theme="dark"] .monkeypay-text-input,
+[data-mp-theme="dark"] .monkeypay-input,
+[data-mp-theme="dark"] input[type="text"],
+[data-mp-theme="dark"] input[type="password"],
+[data-mp-theme="dark"] input[type="date"] {
+    background-color: var(--mp-input-bg) !important;
+    border-color: var(--mp-border-color) !important;
+    color: var(--mp-text-primary) !important;
+}
+
+[data-mp-theme="dark"] .monkeypay-stat-card {
+    background-color: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-stat-card h4 {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-stat-card .stat-value {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] table,
+[data-mp-theme="dark"] .monkeypay-table {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] table th {
+    background-color: rgba(30, 41, 59, 0.8);
+    color: var(--mp-text-secondary);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] table td {
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] table tbody tr:hover {
+    background-color: rgba(51, 65, 85, 0.3);
+}
+
+/* Dark mode — hero stats */
+[data-mp-theme="dark"] .mp-hero-stat {
+    background-color: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-hero-stat__label {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-hero-stat__value {
+    color: var(--mp-text-primary);
+}
+
+/* Dark mode — date pills */
+[data-mp-theme="dark"] .mp-date-pill {
+    background-color: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-date-pill--active {
+    background-color: var(--mp-primary);
+    border-color: var(--mp-primary);
+    color: #fff;
+}
+
+/* Dark mode — quick actions sidebar cards */
+[data-mp-theme="dark"] .mp-qa-card {
+    background-color: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-qa-card__name {
+    color: var(--mp-text-primary);
+}
+
+/* Dark mode — slide toggle */
+[data-mp-theme="dark"] .mp-slide-toggle {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-slide-toggle__thumb {
+    background: var(--mp-primary);
+}
+
+/* Dark mode — connection flow card */
+[data-mp-theme="dark"] .mp-conn-flow {
+    background-color: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+/* Dark mode — sidebar actions */
+[data-mp-theme="dark"] .mp-sidebar-actions__title {
+    color: var(--mp-text-secondary);
+}
+
+/* Dark mode — chart section */
+[data-mp-theme="dark"] .mp-chart-section {
+    background-color: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-chart-section__title {
+    color: var(--mp-text-primary);
+}
+
+/* Dark mode — brand name & version in header */
+[data-mp-theme="dark"] .monkeypay-brand-name {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-brand-version {
+    color: var(--mp-text-secondary);
+}
+
+/* Dark mode — loading pills / empty state text */
+[data-mp-theme="dark"] .mp-dash-pills__empty {
+    color: var(--mp-text-secondary);
+}
+
+/* Dark mode — quick display title */
+[data-mp-theme="dark"] .mp-quick-display__title {
+    color: var(--mp-text-secondary);
+}
+
+/* Dark mode — recent transactions */
+[data-mp-theme="dark"] .mp-recent-tx {
+    background-color: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-recent-tx__title {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-tx-empty {
+    color: var(--mp-text-secondary);
+}
+
+/* Dark mode — page header */
+[data-mp-theme="dark"] .monkeypay-page-title {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-page-desc {
+    color: var(--mp-text-secondary);
+}
+
+/* Dark mode — global header */
+[data-mp-theme="dark"] .monkeypay-header {
+    background-color: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-header__title {
+    color: var(--mp-text-primary);
+}
+
+/* Dark mode — nav link text */
+[data-mp-theme="dark"] .monkeypay-nav__link {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-nav__link:hover,
+[data-mp-theme="dark"] .monkeypay-nav__link--active {
+    color: var(--mp-primary);
+}
+
+/* Dark mode toast */
+[data-mp-theme="dark"] .monkeypay-toast {
+    background-color: #1e293b;
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-primary);
+}
+
+/* Dark mode — admin page bg */
+[data-mp-theme="dark"] .monkeypay-admin-page {
+    background-color: var(--mp-bg);
+}
+
+/* ═══════════════════════════════════════════════════
+   Settings Pill Toggles (mp-settings-pills)
+   ═══════════════════════════════════════════════════ */
+
+.mp-settings-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mp-settings-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 1.5px solid var(--mp-border, rgba(0,0,0,0.1));
+    border-radius: var(--mp-radius-lg, 12px);
+    background: var(--mp-bg-surface, #fff);
+    color: var(--mp-text, #1e293b);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--mp-font, inherit);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    outline: none;
+    line-height: 1.4;
+}
+
+.mp-settings-pill:hover {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.04);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.mp-settings-pill--active {
+    border-color: var(--mp-primary, #10b981);
+    background: rgba(16, 185, 129, 0.08);
+    color: #047857;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.mp-settings-pill--active:hover {
+    background: rgba(16, 185, 129, 0.12);
+}
+
+.mp-settings-pill__icon {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.mp-settings-pill__icon svg {
+    display: block;
+    border-radius: 2px;
+}
+
+.mp-settings-pill__label {
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+}
+
+/* Dark mode — settings pills */
+[data-mp-theme="dark"] .mp-settings-pill {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.12);
+    color: var(--mp-text-primary, #e2e8f0);
+}
+
+[data-mp-theme="dark"] .mp-settings-pill:hover {
+    border-color: rgba(16, 185, 129, 0.35);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+[data-mp-theme="dark"] .mp-settings-pill--active {
+    border-color: var(--mp-primary, #10b981);
+    background: rgba(16, 185, 129, 0.12);
+    color: #6ee7b7;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+[data-mp-theme="dark"] .mp-settings-pill--active:hover {
+    background: rgba(16, 185, 129, 0.18);
+}
+
+/* ═══════════════════════════════════════════════════
+   TIMEZONE CUSTOM PILL DROPDOWN (mp-tz-dropdown)
+   ═══════════════════════════════════════════════════ */
+
+.mp-tz-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.mp-tz-dropdown__trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 500;
+    border: 1.5px solid var(--mp-border-color, #e2e8f0);
+    border-radius: 10px;
+    background: var(--mp-input-bg, #fff);
+    color: var(--mp-text-primary, #1e293b);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    text-align: left;
+}
+
+.mp-tz-dropdown__trigger:hover {
+    border-color: var(--mp-primary, #10b981);
+}
+
+.mp-tz-dropdown__trigger:focus,
+.mp-tz-dropdown.mp-tz-dropdown--open .mp-tz-dropdown__trigger {
+    border-color: var(--mp-primary, #10b981);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.mp-tz-dropdown__trigger svg:first-child {
+    flex-shrink: 0;
+    color: var(--mp-primary, #10b981);
+}
+
+.mp-tz-dropdown__value {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mp-tz-dropdown__chevron {
+    flex-shrink: 0;
+    color: var(--mp-text-muted, #94a3b8);
+    transition: transform 0.2s ease;
+}
+
+.mp-tz-dropdown--open .mp-tz-dropdown__chevron {
+    transform: rotate(180deg);
+}
+
+/* Panel */
+.mp-tz-dropdown__panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    background: var(--mp-card-bg, #fff);
+    border: 1.5px solid var(--mp-border-color, #e2e8f0);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 50;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    max-height: 240px;
+    display: flex;
+    flex-direction: column;
+}
+
+.mp-tz-dropdown--open .mp-tz-dropdown__panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.mp-tz-dropdown__search {
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 1px solid var(--mp-border-light, #f1f5f9);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    background: transparent;
+    color: var(--mp-text-primary, #1e293b);
+    border-radius: 10px 10px 0 0;
+}
+
+.mp-tz-dropdown__search::placeholder {
+    color: var(--mp-text-muted, #94a3b8);
+}
+
+.mp-tz-dropdown__list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 4px;
+}
+
+.mp-tz-dropdown__option {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    border: none;
+    background: none;
+    color: var(--mp-text-primary, #1e293b);
+    text-align: left;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.mp-tz-dropdown__option:hover {
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.mp-tz-dropdown__option--active {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--mp-primary, #10b981);
+    font-weight: 600;
+}
+
+.mp-tz-dropdown__option--hidden {
+    display: none;
+}
+
+/* Dark mode — timezone dropdown */
+[data-mp-theme="dark"] .mp-tz-dropdown__trigger {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.12);
+    color: var(--mp-text-primary, #e2e8f0);
+}
+
+[data-mp-theme="dark"] .mp-tz-dropdown__panel {
+    background: var(--mp-card-bg, #1e293b);
+    border-color: rgba(255,255,255,0.12);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+[data-mp-theme="dark"] .mp-tz-dropdown__search {
+    border-bottom-color: rgba(255,255,255,0.08);
+    color: var(--mp-text-primary, #e2e8f0);
+}
+
+[data-mp-theme="dark"] .mp-tz-dropdown__option {
+    color: var(--mp-text-primary, #e2e8f0);
+}
+
+[data-mp-theme="dark"] .mp-tz-dropdown__option:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+[data-mp-theme="dark"] .mp-tz-dropdown__option--active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+}
+
+@media (max-width: 600px) {
+    .monkeypay-display-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mp-quick-display__row {
+        flex-direction: column;
+    }
+
+    .mp-settings-pills {
+        flex-direction: column;
+    }
+
+    .mp-settings-pill {
+        justify-content: center;
+    }
+}

@@ -70,6 +70,9 @@ class MonkeyPay_REST_Settings {
             'monkeypay_enabled',
             'monkeypay_wc_enabled',
             'monkeypay_checkin_bridge',
+            'monkeypay_language',
+            'monkeypay_timezone',
+            'monkeypay_dark_mode',
         ];
 
         foreach ( $allowed as $key ) {

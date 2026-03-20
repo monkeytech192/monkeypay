@@ -1,0 +1,1185 @@
+/**
+ * MonkeyPay — Comprehensive Dark Theme Overrides
+ *
+ * Covers components that use hardcoded colors instead of CSS vars:
+ *   - Badges & status tags
+ *   - Buttons (danger, outline, ghost)
+ *   - Connection cards (v2 color-mix)
+ *   - API Keys table, key display, warnings
+ *   - Modals (mp-modal sheet, header, forms, pills, buttons)
+ *   - Toggle switches
+ *   - Platform / event card checked states
+ *   - Integrations page
+ *   - Header navigation
+ *   - Forms & inputs
+ *
+ * All rules scoped under html[data-mp-theme="dark"].
+ * Loaded AFTER _display-settings.css (which sets the dark CSS variables).
+ *
+ * @package MonkeyPay
+ * @since   4.3.0
+ */
+
+/* ═══════════════════════════════════════════════════
+   1. BADGES & STATUS TAGS
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-badge-success {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+}
+
+[data-mp-theme="dark"] .monkeypay-badge-gray {
+    background: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
+}
+
+[data-mp-theme="dark"] .tag-receive {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+}
+
+[data-mp-theme="dark"] .tag-send {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+/* API key status badges */
+[data-mp-theme="dark"] .mp-key-status--active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+}
+
+[data-mp-theme="dark"] .mp-key-status--revoked {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+}
+
+/* ═══════════════════════════════════════════════════
+   2. BUTTONS
+   ═══════════════════════════════════════════════════ */
+
+/* Danger button (connections page) */
+[data-mp-theme="dark"] .monkeypay-btn-danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+[data-mp-theme="dark"] .monkeypay-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* Outline button */
+[data-mp-theme="dark"] .monkeypay-btn-outline {
+    background: var(--mp-card-bg);
+    color: var(--mp-text-secondary);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-btn-outline:hover {
+    background: rgba(51, 65, 85, 0.5);
+    border-color: var(--mp-primary);
+    color: var(--mp-primary);
+}
+
+/* Modal ghost button */
+[data-mp-theme="dark"] .mp-btn--ghost {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-btn--ghost:hover {
+    color: var(--mp-text-primary);
+    background: rgba(51, 65, 85, 0.5);
+}
+
+/* Modal outline button */
+[data-mp-theme="dark"] .mp-btn--outline {
+    background: var(--mp-card-bg);
+    color: var(--mp-text-secondary);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-btn--outline:hover {
+    background: rgba(51, 65, 85, 0.5);
+    border-color: #475569;
+}
+
+/* Modal outline-danger button */
+[data-mp-theme="dark"] .mp-btn--outline-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+[data-mp-theme="dark"] .mp-btn--outline-danger:hover {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Danger button (modal) */
+[data-mp-theme="dark"] .mp-btn--danger {
+    background: #dc2626;
+    color: #fff;
+}
+
+[data-mp-theme="dark"] .mp-btn--danger:hover {
+    background: #ef4444;
+}
+
+/* ═══════════════════════════════════════════════════
+   3. CONNECTION CARDS (v2)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-conn-card {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+/* Fix color-mix with white → use dark base */
+[data-mp-theme="dark"] .mp-conn-card.is-active {
+    background: color-mix(in srgb, var(--platform-color, var(--mp-primary)) 8%, var(--mp-card-bg));
+}
+
+[data-mp-theme="dark"] .mp-conn-card__title {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-conn-card__desc {
+    color: var(--mp-text-secondary);
+}
+
+/* Logo background */
+[data-mp-theme="dark"] .mp-conn-card__logo {
+    background: color-mix(in srgb, var(--platform-color, var(--mp-primary)) 15%, transparent);
+}
+
+/* Footer border */
+[data-mp-theme="dark"] .mp-conn-card__footer {
+    border-color: var(--mp-border-color);
+}
+
+/* Toggle switch unchecked state */
+[data-mp-theme="dark"] .mp-conn-toggle-slider {
+    background: #475569;
+}
+
+/* Status text */
+[data-mp-theme="dark"] .mp-conn-status {
+    color: var(--mp-text-secondary);
+}
+
+/* Connection URL box */
+[data-mp-theme="dark"] .monkeypay-connection-url {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════
+   4. MODALS (mp-modal sheet)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-modal__sheet {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-primary);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4),
+                0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+[data-mp-theme="dark"] .mp-modal__header {
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-modal__title {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-modal__subtitle {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-modal__close {
+    background: rgba(51, 65, 85, 0.5);
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-modal__close:hover {
+    background: rgba(51, 65, 85, 0.8);
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-modal__platform-icon {
+    background: rgba(51, 65, 85, 0.5);
+}
+
+/* Modal form inputs */
+[data-mp-theme="dark"] .mp-form-input,
+[data-mp-theme="dark"] .mp-modal__body input[type="text"].mp-form-input {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border-color: var(--mp-border-color) !important;
+    color: var(--mp-text-primary) !important;
+}
+
+[data-mp-theme="dark"] .mp-form-input::placeholder,
+[data-mp-theme="dark"] .mp-modal__body input.mp-form-input::placeholder {
+    color: #64748b;
+}
+
+[data-mp-theme="dark"] .mp-form-input:focus,
+[data-mp-theme="dark"] .mp-modal__body input[type="text"].mp-form-input:focus {
+    background: var(--mp-card-bg) !important;
+    border-color: var(--mp-primary) !important;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15) !important;
+}
+
+[data-mp-theme="dark"] .mp-form-label {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-form-opt {
+    color: #64748b;
+}
+
+[data-mp-theme="dark"] .mp-form-hint {
+    color: #64748b;
+}
+
+/* Modal actions border */
+[data-mp-theme="dark"] .mp-modal__actions {
+    border-color: var(--mp-border-color);
+}
+
+/* Drag handle */
+[data-mp-theme="dark"] .mp-modal__drag-handle span {
+    background: #475569;
+}
+
+/* Event pills */
+[data-mp-theme="dark"] .mp-pill__label {
+    background: rgba(51, 65, 85, 0.3);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-pill__label:hover {
+    border-color: #475569;
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-pill input:checked + .mp-pill__label {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #6ee7b7;
+}
+
+/* Old modal (monkeypay-modal) */
+[data-mp-theme="dark"] .monkeypay-modal-content {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-primary);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+[data-mp-theme="dark"] .monkeypay-modal-header {
+    background: var(--mp-card-bg);
+}
+
+[data-mp-theme="dark"] .monkeypay-modal-header h3 {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-modal-close {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-modal-close:hover {
+    background: rgba(51, 65, 85, 0.5);
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-modal-footer {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-form-label {
+    color: var(--mp-text-primary);
+}
+
+/* ═══════════════════════════════════════════════════
+   5. API KEYS PAGE
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-apikeys-info-banner {
+    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.2);
+    color: #6ee7b7;
+}
+
+[data-mp-theme="dark"] .mp-apikeys-table-wrap {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-apikeys-table thead {
+    background: rgba(15, 23, 42, 0.4);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-apikeys-table th {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-apikeys-table td {
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-apikeys-table tbody tr:hover {
+    background: rgba(52, 211, 153, 0.04);
+}
+
+/* Key value monospace display */
+[data-mp-theme="dark"] .mp-key-value {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-secondary);
+}
+
+/* Key label */
+[data-mp-theme="dark"] .mp-key-label__text {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-key-label__edit:hover {
+    color: var(--mp-primary);
+    background: rgba(52, 211, 153, 0.1);
+}
+
+/* Key label inline edit */
+[data-mp-theme="dark"] .mp-key-label__input {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-primary);
+    color: var(--mp-text-primary);
+}
+
+/* Action icon buttons */
+[data-mp-theme="dark"] .mp-key-actions .mp-btn--icon {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-key-actions .mp-btn--icon:hover {
+    border-color: var(--mp-primary);
+    color: var(--mp-primary);
+    background: rgba(52, 211, 153, 0.1);
+}
+
+[data-mp-theme="dark"] .mp-key-actions .mp-btn--icon.mp-btn--danger-icon:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* New key warning */
+[data-mp-theme="dark"] .mp-new-key-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #fbbf24;
+}
+
+/* New key code block */
+[data-mp-theme="dark"] .mp-new-key-code {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-primary);
+}
+
+/* Empty state */
+[data-mp-theme="dark"] .mp-apikeys-empty p {
+    color: var(--mp-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════
+   6. PLATFORM / EVENT CARDS (Checked States)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-platform-card {
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-platform-option input:checked + .monkeypay-platform-card {
+    border-color: var(--mp-primary);
+    background: rgba(52, 211, 153, 0.08);
+    color: #6ee7b7;
+}
+
+[data-mp-theme="dark"] .monkeypay-event-card {
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .option-receive input:checked + .monkeypay-event-card {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.1);
+    color: #6ee7b7;
+}
+
+[data-mp-theme="dark"] .option-send input:checked + .monkeypay-event-card {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.1);
+    color: #fbbf24;
+}
+
+/* ═══════════════════════════════════════════════════
+   7. INTEGRATIONS
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-integration {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-integration h4 {
+    color: var(--mp-text-primary);
+}
+
+/* ═══════════════════════════════════════════════════
+   8. HEADER NAVIGATION
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-global-header {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-nav-item {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-nav-item:hover {
+    color: var(--mp-text-primary);
+    background: rgba(51, 65, 85, 0.4);
+}
+
+[data-mp-theme="dark"] .monkeypay-nav-item.active {
+    color: var(--mp-primary);
+}
+
+/* ═══════════════════════════════════════════════════
+   9. FORMS (Focus Glow Fix)
+   ═══════════════════════════════════════════════════ */
+
+/* Override box-shadow from cyan to green for dark mode */
+[data-mp-theme="dark"] .monkeypay-input:focus {
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+}
+
+[data-mp-theme="dark"] .monkeypay-select:focus {
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════
+   10. EMPTY STATES
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-empty-state h3 {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-empty-state p {
+    color: var(--mp-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════
+   11. SCROLLBAR (Dark)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-modal-content::-webkit-scrollbar-thumb,
+[data-mp-theme="dark"] .mp-modal__sheet::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+/* ═══════════════════════════════════════════════════
+   12. INFO BOX / CARD BUILDER
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-info-box {
+    background: rgba(52, 211, 153, 0.06);
+    border-color: rgba(52, 211, 153, 0.15);
+    color: var(--mp-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════
+   13. COMING SOON BADGE
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-conn-badge-coming {
+    background: linear-gradient(135deg, #818cf8, #a78bfa);
+}
+
+/* ═══════════════════════════════════════════════════
+   14. ONBOARDING CARD
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-onboarding {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-onboarding h2,
+[data-mp-theme="dark"] .monkeypay-onboarding h3 {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-onboarding p {
+    color: var(--mp-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════
+   15. FULL-PAGE WP ADMIN BACKGROUND
+   ═══════════════════════════════════════════════════ */
+
+/* WordPress admin body and all wrapper divs → seamless dark from top to bottom */
+[data-mp-theme="dark"] ~ body,
+html[data-mp-theme="dark"],
+html[data-mp-theme="dark"] body {
+    background-color: #0f172a !important;
+}
+
+[data-mp-theme="dark"] #wpcontent,
+[data-mp-theme="dark"] #wpbody,
+[data-mp-theme="dark"] #wpbody-content {
+    background-color: #0f172a !important;
+}
+
+[data-mp-theme="dark"] .wrap {
+    background-color: transparent !important;
+}
+
+/* WP admin footer */
+[data-mp-theme="dark"] #wpfooter,
+[data-mp-theme="dark"] #footer-thankyou,
+[data-mp-theme="dark"] #footer-upgrade {
+    color: var(--mp-text-secondary) !important;
+}
+
+[data-mp-theme="dark"] #wpfooter a {
+    color: var(--mp-primary) !important;
+}
+
+/* WordPress admin title / notices area */
+[data-mp-theme="dark"] .update-nag,
+[data-mp-theme="dark"] .updated,
+[data-mp-theme="dark"] .notice {
+    background: var(--mp-card-bg) !important;
+    border-color: var(--mp-border-color) !important;
+    color: var(--mp-text-primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   16. GATEWAY PAGE (Cổng Thanh Toán)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-gateways-grid {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-card {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-card:hover {
+    border-color: #475569;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-header {
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-name {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-status {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-form {
+    background: rgba(15, 23, 42, 0.4);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-form .monkeypay-field label {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-form input[type="text"] {
+    background: var(--mp-card-bg) !important;
+    border-color: var(--mp-border-color) !important;
+    color: var(--mp-text-primary) !important;
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-form input[type="text"]::placeholder {
+    color: #64748b;
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-form input[type="text"]:focus {
+    border-color: var(--mp-primary) !important;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15) !important;
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-toggle-btn {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-toggle-btn:hover {
+    border-color: var(--mp-primary);
+    color: var(--mp-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-delete-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* Info-box inside gateway form (setup instructions) */
+[data-mp-theme="dark"] .monkeypay-gateway-form .monkeypay-info-box h4 {
+    color: var(--mp-text-primary) !important;
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-form .monkeypay-info-box ol,
+[data-mp-theme="dark"] .monkeypay-gateway-form .monkeypay-info-box li {
+    color: var(--mp-text-secondary) !important;
+}
+
+[data-mp-theme="dark"] .monkeypay-gateway-form .monkeypay-info-box code {
+    background: rgba(52, 211, 153, 0.12) !important;
+    color: var(--mp-primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   17. INTEGRATIONS PAGE (Tích Hợp)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-connections-grid {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-connection-card {
+    background: var(--mp-card-bg) !important;
+    border-color: var(--mp-border-color) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-mp-theme="dark"] .monkeypay-connection-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+[data-mp-theme="dark"] .monkeypay-connection-card.enabled {
+    border-color: rgba(52, 211, 153, 0.3) !important;
+}
+
+[data-mp-theme="dark"] .monkeypay-connection-header {
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .monkeypay-connection-title {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-connection-desc {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-toggle-status-text {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .monkeypay-not-installed-hint {
+    color: var(--mp-text-secondary);
+}
+
+/* Toggle switch (integrations page) */
+[data-mp-theme="dark"] .monkeypay-switch__slider {
+    background: #475569;
+}
+
+[data-mp-theme="dark"] .monkeypay-switch input:checked + .monkeypay-switch__slider {
+    background: var(--mp-primary);
+}
+
+/* ═══════════════════════════════════════════════════
+   18. ACCOUNT PAGE (Tài Khoản)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-account-container {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+[data-mp-theme="dark"] .mp-account-profile {
+    border-color: var(--mp-border-color);
+    background: linear-gradient(135deg, rgba(52,211,153,0.06) 0%, rgba(16,185,129,0.03) 50%, transparent 100%);
+}
+
+[data-mp-theme="dark"] .mp-account-name {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-account-email {
+    color: var(--mp-text-secondary);
+}
+
+/* Stats row */
+[data-mp-theme="dark"] .mp-account-stats {
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-account-stat-card {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: var(--mp-border-color);
+    backdrop-filter: blur(12px);
+}
+
+[data-mp-theme="dark"] .mp-account-stat-card:hover {
+    border-color: #475569;
+}
+
+[data-mp-theme="dark"] .mp-account-stat-label {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-account-stat-value {
+    color: var(--mp-text-primary);
+}
+
+/* Sections */
+[data-mp-theme="dark"] .mp-account-section {
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-account-section-title {
+    color: var(--mp-text-secondary);
+}
+
+/* Detail fields */
+[data-mp-theme="dark"] .mp-account-field {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-account-field:hover {
+    background: rgba(15, 23, 42, 0.7);
+    border-color: #475569;
+}
+
+[data-mp-theme="dark"] .mp-account-field label {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-account-field-value {
+    color: var(--mp-text-primary);
+}
+
+/* API key row */
+[data-mp-theme="dark"] .mp-account-apikey-row {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-account-apikey-value {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-account-toggle-btn,
+[data-mp-theme="dark"] .mp-account-copy-btn {
+    background: var(--mp-card-bg);
+    border-color: var(--mp-border-color);
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-account-toggle-btn:hover,
+[data-mp-theme="dark"] .mp-account-copy-btn:hover {
+    background: rgba(52, 211, 153, 0.1);
+    color: var(--mp-primary);
+    border-color: var(--mp-primary);
+}
+
+/* Password inputs in account */
+[data-mp-theme="dark"] .mp-account-section input[type="password"],
+[data-mp-theme="dark"] .mp-account-section input[type="text"] {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border-color: var(--mp-border-color) !important;
+    color: var(--mp-text-primary) !important;
+}
+
+[data-mp-theme="dark"] .mp-account-section input::placeholder {
+    color: #64748b;
+}
+
+[data-mp-theme="dark"] .mp-account-section input:focus {
+    border-color: var(--mp-primary) !important;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15) !important;
+}
+
+/* Danger zone */
+[data-mp-theme="dark"] .mp-account-danger-zone {
+    background: linear-gradient(135deg, rgba(239,68,68,0.06), rgba(239,68,68,0.02));
+    border-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-account-danger-info strong {
+    color: #fca5a5;
+}
+
+[data-mp-theme="dark"] .mp-account-danger-info p {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-account-logout-btn {
+    background: var(--mp-card-bg);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+[data-mp-theme="dark"] .mp-account-logout-btn:hover {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+}
+
+/* Upgrade button (header) */
+[data-mp-theme="dark"] .mp-account-upgrade-btn {
+    color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════
+   19. INFO-BOX (global dark — reinforce inner text)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-info-box strong {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-info-box a {
+    color: var(--mp-primary);
+}
+
+/* ═══════════════════════════════════════════════════
+   20. PAGE HEADER (reinforce all pages)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .monkeypay-page-header {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .monkeypay-page-header svg {
+    color: var(--mp-primary);
+}
+
+/* ═══════════════════════════════════════════════════
+   21. CONNECTION STATUS CARD (mp-conn-compact)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-conn-compact {
+    background: var(--mp-card-bg, #1e293b);
+    border-color: var(--mp-border, rgba(255,255,255,0.08));
+}
+
+[data-mp-theme="dark"] .mp-conn-compact__title {
+    color: var(--mp-text-primary, #f1f5f9);
+}
+
+[data-mp-theme="dark"] .mp-conn-compact__label {
+    color: var(--mp-text-secondary, #94a3b8);
+}
+
+[data-mp-theme="dark"] .mp-conn-compact__icon {
+    border-color: rgba(255,255,255,0.1);
+}
+
+[data-mp-theme="dark"] .mp-conn-compact__line {
+    background: rgba(255,255,255,0.08);
+}
+
+[data-mp-theme="dark"] .mp-conn-compact__webhook {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.08);
+}
+
+[data-mp-theme="dark"] .mp-conn-compact__webhook-label {
+    color: var(--mp-text-secondary, #94a3b8);
+}
+
+[data-mp-theme="dark"] .mp-conn-compact__webhook-url {
+    color: var(--mp-text-secondary, #cbd5e1);
+    background: rgba(0,0,0,0.25);
+}
+
+[data-mp-theme="dark"] .mp-conn-compact__refresh {
+    color: var(--mp-text-secondary, #94a3b8);
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.1);
+}
+
+[data-mp-theme="dark"] .mp-conn-compact__refresh:hover {
+    color: var(--mp-primary, #10b981);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+/* ═══════════════════════════════════════════════════
+   22. API KEY PILLS (mp-dash-pill) — dark mode contrast
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-dash-pill--active {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.15);
+    color: var(--mp-text-primary, #f1f5f9);
+}
+
+[data-mp-theme="dark"] .mp-dash-pill--active:hover {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+[data-mp-theme="dark"] .mp-dash-pill__name {
+    color: var(--mp-text-primary, #e2e8f0);
+}
+
+[data-mp-theme="dark"] .mp-dash-pill__copy {
+    color: var(--mp-text-secondary, #94a3b8);
+    background: transparent;
+}
+
+[data-mp-theme="dark"] .mp-dash-pill__copy:hover {
+    color: var(--mp-primary, #10b981);
+    background: rgba(16, 185, 129, 0.12);
+}
+
+[data-mp-theme="dark"] .mp-dash-pill--create {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+}
+
+[data-mp-theme="dark"] .mp-dash-pill--create:hover {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════
+   23. QUICK ACTION CARDS (mp-qa-card) — dark mode
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-qa-card {
+    background: var(--mp-card-bg, #1e293b);
+    border-color: rgba(255,255,255,0.08);
+}
+
+[data-mp-theme="dark"] .mp-qa-card:hover {
+    border-color: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.04);
+}
+
+[data-mp-theme="dark"] .mp-qa-card__name {
+    color: var(--mp-text-primary, #f1f5f9);
+}
+
+/* ═══════════════════════════════════════════════════
+   24. SIDEBAR SECTION HEADINGS — dark mode
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-sidebar-actions__title,
+[data-mp-theme="dark"] .mp-quick-display__title {
+    color: var(--mp-text-secondary, #94a3b8);
+}
+
+/* ═══════════════════════════════════════════════════
+   25. CARD BUILDER MODAL — dark mode
+   ═══════════════════════════════════════════════════ */
+
+/* Body background */
+[data-mp-theme="dark"] .mp-cb-body {
+    background: var(--mp-card-bg, #1e293b);
+}
+
+/* Section labels */
+[data-mp-theme="dark"] .mp-cb-section__label {
+    color: var(--mp-text-secondary, #94a3b8);
+}
+
+/* Palette items */
+[data-mp-theme="dark"] .mp-cb-palette-item {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.10);
+    color: var(--mp-text-primary, #f1f5f9);
+}
+
+[data-mp-theme="dark"] .mp-cb-palette-item:hover {
+    border-color: var(--mp-accent, #22d3ee);
+    background: rgba(34,211,238,0.08);
+}
+
+/* Canvas */
+[data-mp-theme="dark"] .mp-cb-canvas {
+    border-color: rgba(255,255,255,0.10);
+    background: rgba(15,23,42,0.5);
+}
+
+[data-mp-theme="dark"] .mp-cb-canvas.is-drag-over {
+    border-color: var(--mp-accent, #22d3ee);
+    background: rgba(34,211,238,0.04);
+}
+
+[data-mp-theme="dark"] .mp-cb-canvas__empty {
+    color: var(--mp-text-secondary, #64748b);
+}
+
+/* Canvas items */
+[data-mp-theme="dark"] .mp-cb-item {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.10);
+}
+
+[data-mp-theme="dark"] .mp-cb-item:hover {
+    border-color: var(--mp-accent, #22d3ee);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+[data-mp-theme="dark"] .mp-cb-item__drag {
+    color: var(--mp-text-secondary, #64748b);
+}
+
+[data-mp-theme="dark"] .mp-cb-item__type {
+    background: rgba(34,211,238,0.12);
+    color: var(--mp-accent, #22d3ee);
+}
+
+/* Config inputs & textareas */
+[data-mp-theme="dark"] .mp-cb-item__config input,
+[data-mp-theme="dark"] .mp-cb-item__config textarea {
+    background: rgba(15,23,42,0.6);
+    border-color: rgba(255,255,255,0.10);
+    color: var(--mp-text-primary, #f1f5f9);
+}
+
+[data-mp-theme="dark"] .mp-cb-item__config input:focus,
+[data-mp-theme="dark"] .mp-cb-item__config textarea:focus {
+    border-color: var(--mp-accent, #22d3ee);
+    box-shadow: 0 0 0 2px rgba(34,211,238,0.15);
+}
+
+[data-mp-theme="dark"] .mp-cb-item__config input::placeholder,
+[data-mp-theme="dark"] .mp-cb-item__config textarea::placeholder {
+    color: var(--mp-text-secondary, #64748b);
+}
+
+/* Remove button */
+[data-mp-theme="dark"] .mp-cb-item__remove {
+    color: var(--mp-text-secondary, #64748b);
+}
+
+[data-mp-theme="dark"] .mp-cb-item__remove:hover {
+    color: #f87171;
+    background: rgba(248,113,113,0.10);
+}
+
+/* HR element */
+[data-mp-theme="dark"] .mp-cb-item--hr .mp-cb-item__config {
+    color: var(--mp-text-secondary, #64748b);
+}
+
+/* Variable chips */
+[data-mp-theme="dark"] .mp-cb-var-chip {
+    background: rgba(34,211,238,0.08);
+    color: var(--mp-accent, #22d3ee);
+    border-color: rgba(34,211,238,0.18);
+}
+
+[data-mp-theme="dark"] .mp-cb-var-chip:hover {
+    background: rgba(34,211,238,0.15);
+    border-color: var(--mp-accent, #22d3ee);
+}
+
+/* Preview card */
+[data-mp-theme="dark"] .mp-cb-preview-card {
+    background: rgba(15,23,42,0.8);
+    border-color: rgba(255,255,255,0.10);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+[data-mp-theme="dark"] .mp-cb-preview-card__header {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--preview-color, #34c724) 15%, #0f172a),
+        rgba(15,23,42,0.9));
+    border-bottom-color: rgba(255,255,255,0.08);
+}
+
+[data-mp-theme="dark"] .mp-cb-preview-card__text {
+    color: var(--mp-text-primary, #f1f5f9);
+}
+
+[data-mp-theme="dark"] .mp-cb-preview-card__hr {
+    border-top-color: rgba(255,255,255,0.08);
+}
+
+[data-mp-theme="dark"] .mp-cb-preview-card__field-label {
+    color: var(--mp-text-secondary, #94a3b8);
+}
+
+[data-mp-theme="dark"] .mp-cb-preview-card__field-value {
+    color: var(--mp-text-primary, #f1f5f9);
+}
+
+[data-mp-theme="dark"] .mp-cb-preview-card__note {
+    color: var(--mp-text-secondary, #64748b);
+}
+
+[data-mp-theme="dark"] .mp-cb-preview-card__btn {
+    background: rgba(51,112,255,0.12);
+    border-color: rgba(51,112,255,0.3);
+    color: #60a5fa;
+}
+
+/* Footer */
+[data-mp-theme="dark"] .mp-cb-footer {
+    border-top-color: rgba(255,255,255,0.08);
+}
+
+/* Header title input */
+[data-mp-theme="dark"] #mp-cb-header-title {
+    background: rgba(15,23,42,0.6);
+    border-color: rgba(255,255,255,0.10);
+    color: var(--mp-text-primary, #f1f5f9);
+}
+
+/* Tab toggle Credit / Debit - dark */
+[data-mp-theme="dark"] .mp-cb-tabs {
+    background: var(--mp-card-bg, #1e293b);
+    border-top-color: rgba(255,255,255,0.08);
+}
+
+[data-mp-theme="dark"] .mp-cb-tab {
+    color: rgba(255,255,255,0.5);
+    border-color: rgba(255,255,255,0.12);
+}
+
+[data-mp-theme="dark"] .mp-cb-tab:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.25);
+}
