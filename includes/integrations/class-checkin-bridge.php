@@ -196,14 +196,14 @@ class MonkeyPay_Checkin_Bridge {
         // Cleanup mapping
         delete_option( 'monkeypay_tx_' . $tx_id );
 
-        error_log( "[MonkeyPay Bridge] Invoice #{$invoice_id} marked as paid via tx {$tx_id}" );
+        MonkeyPay_Logger::transaction( "Bridge: Invoice #{$invoice_id} marked as paid via tx {$tx_id}" );
     }
 
     /**
      * Handle session expired → log for checkin context.
      */
     public function on_session_expired( $data ) {
-        error_log( '[MonkeyPay Bridge] Session expired — checkin auto-pay unavailable until re-login' );
+        MonkeyPay_Logger::webhook( 'Bridge: Session expired — checkin auto-pay unavailable until re-login' );
     }
 
     /**
@@ -213,7 +213,7 @@ class MonkeyPay_Checkin_Bridge {
         $timestamp = wp_next_scheduled( 'checkin_mbbank_auto_check' );
         if ( $timestamp ) {
             wp_unschedule_event( $timestamp, 'checkin_mbbank_auto_check' );
-            error_log( '[MonkeyPay Bridge] Disabled old cron polling (checkin_mbbank_auto_check)' );
+            MonkeyPay_Logger::log( 'error', 'INFO', 'Bridge: Disabled old cron polling (checkin_mbbank_auto_check)' );
         }
     }
 }

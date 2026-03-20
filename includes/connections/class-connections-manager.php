@@ -238,13 +238,18 @@ class MonkeyPay_Connections {
             $result = $this->send_webhook( $conn, $event, $data );
             $results[ $conn['id'] ] = $result;
 
-            error_log( sprintf(
-                '[MonkeyPay Connections] Dispatched %s to "%s" (%s): %s',
+            MonkeyPay_Logger::lark( sprintf(
+                'Dispatched %s to "%s" (%s): %s',
                 $event,
                 $conn['name'] ?: $conn['id'],
                 $conn['platform'],
                 is_wp_error( $result ) ? $result->get_error_message() : 'OK'
-            ) );
+            ), [
+                'connection_id' => $conn['id'],
+                'platform'      => $conn['platform'],
+                'event'         => $event,
+                'result'        => is_wp_error( $result ) ? $result->get_error_message() : $result,
+            ] );
         }
 
         return $results;

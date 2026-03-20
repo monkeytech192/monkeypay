@@ -190,6 +190,6 @@ class MonkeyPay_WooCommerce_Gateway extends WC_Payment_Gateway {
         // Cleanup mapping
         delete_option( 'monkeypay_wc_tx_' . $tx_id );
 
-        error_log( "[MonkeyPay WC] Order #{$order_id} completed via tx {$tx_id}" );
+        MonkeyPay_Logger::transaction( "WC Order #{$order_id} completed via tx {$tx_id}" );
     }
 }

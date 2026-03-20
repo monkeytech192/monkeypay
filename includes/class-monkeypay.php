@@ -50,6 +50,9 @@ class MonkeyPay {
     private function load_dependencies() {
         $dir = MONKEYPAY_PLUGIN_DIR . 'includes/';
 
+        // Logger MUST load first
+        require_once $dir . 'class-monkeypay-logger.php';
+
         require_once $dir . 'class-monkeypay-api-client.php';
         require_once $dir . 'class-monkeypay-webhook.php';
         require_once $dir . 'class-monkeypay-rest-api.php';
@@ -114,6 +117,9 @@ class MonkeyPay {
 
         // Self-hosted update checker
         add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'check_plugin_update' ] );
+
+        // First-time webhook URL sync for existing merchants
+        add_action( 'admin_init', [ $this, 'maybe_sync_webhook_url' ] );
     }
 
     /**
@@ -144,6 +150,55 @@ class MonkeyPay {
      */
     public function deactivate() {
         flush_rewrite_rules();
+    }
+
+    /**
+     * Sync webhook URL to server once for merchants created before this feature.
+     *
+     * Runs on admin_init. Checks flag 'monkeypay_webhook_synced'.
+     * If not synced yet AND api_key exists, calls PUT /merchants/webhook-url.
+     *
+     * @since 3.1.0
+     */
+    public function maybe_sync_webhook_url() {
+        // Already synced — skip
+        if ( get_option( 'monkeypay_webhook_synced', '0' ) === '1' ) {
+            return;
+        }
+
+        $api_key = get_option( 'monkeypay_api_key', '' );
+        if ( empty( $api_key ) ) {
+            return; // Not registered yet
+        }
+
+        $api_url     = rtrim( get_option( 'monkeypay_api_url', MONKEYPAY_API_URL ), '/' );
+        $webhook_url = rest_url( 'monkeypay/v1/webhook' );
+
+        $response = wp_remote_request( $api_url . '/api/merchants/webhook-url', [
+            'method'  => 'PUT',
+            'timeout' => 10,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'X-Api-Key'    => $api_key,
+            ],
+            'body' => wp_json_encode( [ 'webhook_url' => $webhook_url ] ),
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            MonkeyPay_Logger::api( 'Webhook sync failed: ' . $response->get_error_message() );
+            return; // Will retry next admin load
+        }
+
+        $code = wp_remote_retrieve_response_code( $response );
+
+        if ( $code >= 200 && $code < 300 ) {
+            update_option( 'monkeypay_webhook_synced', '1' );
+            MonkeyPay_Logger::api( "Webhook URL synced successfully: {$webhook_url}" );
+        } else {
+            $body = wp_remote_retrieve_body( $response );
+            MonkeyPay_Logger::api( "Webhook sync failed (HTTP {$code}): {$body}" );
+            // Don't set flag — will retry on next admin load
+        }
     }
 
     /**
@@ -180,11 +235,14 @@ class MonkeyPay {
         );
 
         wp_localize_script( 'monkeypay-admin', 'monkeypayAdmin', [
-            'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
-            'adminUrl' => admin_url(),
-            'restUrl'  => rest_url( 'monkeypay/v1/' ),
-            'nonce'    => wp_create_nonce( 'wp_rest' ),
-            'i18n'     => [
+            'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+            'adminUrl'       => admin_url(),
+            'restUrl'        => rest_url( 'monkeypay/v1/' ),
+            'pluginUrl'      => MONKEYPAY_PLUGIN_URL,
+            'apiUrl'         => rtrim( get_option( 'monkeypay_api_url', MONKEYPAY_API_URL ), '/' ),
+            'nonce'          => wp_create_nonce( 'wp_rest' ),
+            'authProvider'   => get_option( 'monkeypay_auth_provider', 'password' ),
+            'i18n'           => [
                 'connecting'   => __( 'Đang kết nối...', 'monkeypay' ),
                 'connected'    => __( 'Đã kết nối', 'monkeypay' ),
                 'disconnected' => __( 'Mất kết nối', 'monkeypay' ),
@@ -202,16 +260,46 @@ class MonkeyPay {
             true
         );
 
-        // ── JS — Page-specific modules ──
-        $page_modules = $this->get_page_modules( $hook );
-        foreach ( $page_modules as $handle => $file ) {
+        // ── Onboarding gate: load onboarding.js (no client-side Google SDK needed — uses server redirect) ──
+        $page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+        $needs_onboarding = empty( get_option( 'monkeypay_api_key', '' ) );
+
+        if ( $needs_onboarding && strpos( $page, 'monkeypay' ) === 0 ) {
+            // Onboarding module
             wp_enqueue_script(
-                'monkeypay-' . $handle,
-                $base_url . 'js/admin/' . $file,
+                'monkeypay-onboarding',
+                $base_url . 'js/admin/onboarding.js',
                 [ 'jquery', 'monkeypay-admin', 'monkeypay-utils' ],
                 $version,
                 true
             );
+        } else {
+            // ── JS — Chart.js (dashboard only) ──
+            if ( 'monkeypay' === $page ) {
+                wp_enqueue_script(
+                    'chartjs',
+                    'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js',
+                    [],
+                    '4.4.7',
+                    true
+                );
+            }
+
+            // ── JS — Page-specific modules (only when NOT in onboarding) ──
+            $page_modules = $this->get_page_modules( $hook );
+            foreach ( $page_modules as $handle => $file ) {
+                $deps = [ 'jquery', 'monkeypay-admin', 'monkeypay-utils' ];
+                if ( 'dashboard' === $handle ) {
+                    $deps[] = 'chartjs';
+                }
+                wp_enqueue_script(
+                    'monkeypay-' . $handle,
+                    $base_url . 'js/admin/' . $file,
+                    $deps,
+                    $version,
+                    true
+                );
+            }
         }
     }
 
@@ -244,6 +332,7 @@ class MonkeyPay {
             ],
             'monkeypay-api-keys'    => [ 'api-keys' => 'api-keys.js' ],
             'monkeypay-api-docs'    => [ 'api-docs' => 'api-docs.js' ],
+            'monkeypay-transactions' => [ 'transactions' => 'transactions.js' ],
         ];
 
         if ( isset( $slug_map[ $page ] ) ) {

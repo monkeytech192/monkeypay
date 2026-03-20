@@ -92,6 +92,16 @@ class MonkeyPay_Admin {
             [ $this, 'render_api_docs_page' ]
         );
 
+        // Transactions
+        add_submenu_page(
+            'monkeypay',
+            __( 'Lịch Sử Giao Dịch', 'monkeypay' ),
+            __( 'Lịch Sử GD', 'monkeypay' ),
+            'manage_options',
+            'monkeypay-transactions',
+            [ $this, 'render_transactions_page' ]
+        );
+
         // Payment Gateways
         add_submenu_page(
             'monkeypay',
@@ -197,6 +207,14 @@ class MonkeyPay_Admin {
             return;
         }
         include MONKEYPAY_PLUGIN_DIR . 'templates/admin-api-docs.php';
+    }
+
+    public function render_transactions_page() {
+        if ( $this->needs_onboarding() ) {
+            include MONKEYPAY_PLUGIN_DIR . 'templates/admin-onboarding.php';
+            return;
+        }
+        include MONKEYPAY_PLUGIN_DIR . 'templates/admin-transactions.php';
     }
 
     public function render_pricing_page() {

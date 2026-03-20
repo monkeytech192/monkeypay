@@ -1,437 +1,466 @@
 <?php
 /**
- * MonkeyPay Dashboard Page
+ * Admin Dashboard Page — MonkeyPay v4.1
  *
- * Bank balance overview, connection path, transaction stats, recent transactions
+ * Redesigned layout: 3-col top (Visa card + Stats + Connection Flow),
+ * pill date filter, Chart.js cash flow chart, transaction table.
  *
  * @package MonkeyPay
- * @since   4.0.0
+ * @since   4.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Load connections data for dashboard mini section
-$connections_mgr = MonkeyPay_Connections::get_instance();
-$connections     = $connections_mgr->get_connections();
-$platform_meta   = MonkeyPay_Connections::get_platform_meta();
-?>
+$webhook_url = rest_url( 'monkeypay/v1/webhook' );
+$api_key     = get_option( 'monkeypay_api_key', '' );
 
+// Connection data for JS — use singleton to read correct option key
+$conn_manager     = MonkeyPay_Connections::get_instance();
+$connections      = $conn_manager->get_connections();
+$platform_meta    = MonkeyPay_Connections::get_platform_meta();
+$connections_list = [];
+if ( is_array( $connections ) ) {
+    foreach ( $connections as $conn ) {
+        $connections_list[] = [
+            'id'       => $conn['id'] ?? '',
+            'platform' => $conn['platform'] ?? '',
+            'enabled'  => ! empty( $conn['enabled'] ),
+        ];
+    }
+}
+?>
 <div class="wrap monkeypay-admin-wrap">
     <?php include MONKEYPAY_PLUGIN_DIR . 'templates/partials/global-header.php'; ?>
 
     <div class="monkeypay-admin-page">
 
-        <!-- ═══ Balance Overview Card ═══ -->
-        <div class="mp-dashboard-hero mp-fade-up" id="mp-dashboard-hero">
-            <div class="mp-hero-balance">
-                <div class="mp-hero-balance__label" id="mp-balance-label">
-                    <svg viewBox="0 0 24 24"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    <?php esc_html_e( 'Tài khoản nhận', 'monkeypay' ); ?>
-                </div>
-                <div class="mp-hero-balance__amount" id="mp-balance-amount">
-                    <span class="mp-balance-skeleton"></span>
-                </div>
-                <div class="mp-hero-balance__account" id="mp-balance-account">—</div>
+        <!-- Page Header -->
+        <div class="monkeypay-page-header">
+            <div>
+                <h2 class="monkeypay-page-title">
+                    <svg viewBox="0 0 24 24" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;color:var(--mp-primary);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <?php esc_html_e( 'Dashboard', 'monkeypay' ); ?>
+                </h2>
+                <p class="monkeypay-page-desc"><?php esc_html_e( 'Tổng quan hoạt động thanh toán và trạng thái hệ thống', 'monkeypay' ); ?></p>
             </div>
+        </div>
+
+<script>
+window.mpPlatformMeta = <?php echo wp_json_encode( $platform_meta ); ?>;
+window.mpConnections  = <?php echo wp_json_encode( $connections_list ); ?>;
+</script>
+
+<!-- ═══════════════════════════════════════════════════
+     DASHBOARD 2-COLUMN LAYOUT
+     Left (1/3): Membership Card + Quick Actions (vertical)
+     Right (2/3): Stats + Connection → Chart → Transactions
+     ═══════════════════════════════════════════════════ -->
+<div class="mp-dashboard-layout mp-fade-up">
+
+    <!-- ── LEFT SIDEBAR ─────────────────────────────── -->
+    <div class="mp-dashboard-left">
+
+        <!-- Membership Card -->
+        <div class="mp-visa-card mp-member-card">
+            <div class="mp-visa-card__shine"></div>
+            <div class="mp-visa-card__pattern"></div>
+
+            <!-- Row 1: Brand + Plan badge -->
+            <div class="mp-member-card__top">
+                <div class="mp-member-card__brand">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    <span class="mp-member-card__brand-name">MonkeyPay</span>
+                </div>
+                <span class="mp-member-card__plan-badge" id="mp-card-plan">
+                    <span class="mp-balance-skeleton mp-balance-skeleton--xs">&nbsp;</span>
+                </span>
+            </div>
+
+            <!-- Row 2: Merchant / Org name -->
+            <div class="mp-member-card__org">
+                <span class="mp-member-card__org-label">TỔ CHỨC</span>
+                <span class="mp-member-card__org-name" id="mp-card-org">
+                    <span class="mp-balance-skeleton mp-balance-skeleton--sm">&nbsp;</span>
+                </span>
+            </div>
+
+            <!-- Row 3: API Key (masked) -->
+            <div class="mp-member-card__key">
+                <span class="mp-member-card__key-label">API KEY</span>
+                <span class="mp-member-card__key-value" id="mp-card-apikey">
+                    <span class="mp-balance-skeleton">&nbsp;</span>
+                </span>
+            </div>
+
+            <!-- Row 4: Bottom — Account holder + Expiry -->
+            <div class="mp-visa-card__bottom">
+                <div class="mp-visa-card__holder">
+                    <span class="mp-visa-card__holder-label">CHỦ TÀI KHOẢN</span>
+                    <span class="mp-visa-card__holder-name" id="mp-card-holder">
+                        <span class="mp-balance-skeleton mp-balance-skeleton--sm">&nbsp;</span>
+                    </span>
+                </div>
+                <div class="mp-member-card__expiry">
+                    <span class="mp-member-card__expiry-label">HẾT HẠN</span>
+                    <span class="mp-member-card__expiry-value" id="mp-card-expiry">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions (vertical stack) -->
+        <div class="mp-sidebar-actions">
+            <h4 class="mp-sidebar-actions__title">Thao tác nhanh</h4>
+
+            <!-- Connections -->
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay-connections' ) ); ?>" class="mp-qa-card">
+                <div class="mp-qa-card__icon mp-qa-card__icon--conn">
+                    <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <div class="mp-qa-card__info">
+                    <span class="mp-qa-card__name">Kết nối</span>
+                    <div class="mp-qa-card__inline" id="mp-qa-conn-logos">
+                        <span class="mp-dash-pills__empty">Đang tải...</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- API Keys -->
+            <div class="mp-qa-card" id="mp-qa-create-key">
+                <div class="mp-qa-card__icon mp-qa-card__icon--key">
+                    <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                </div>
+                <div class="mp-qa-card__info">
+                    <span class="mp-qa-card__name">API Keys</span>
+                    <div class="mp-qa-card__inline" id="mp-qa-apikeys-pills">
+                        <span class="mp-dash-pills__empty">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Gateways -->
+            <div class="mp-qa-card" id="mp-qa-create-gateway">
+                <div class="mp-qa-card__icon mp-qa-card__icon--gateway">
+                    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                </div>
+                <div class="mp-qa-card__info">
+                    <span class="mp-qa-card__name">Cổng thanh toán</span>
+                    <div class="mp-qa-card__inline" id="mp-qa-gateways-logos">
+                        <span class="mp-dash-pills__empty">Đang tải...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- .mp-dashboard-left -->
+
+    <!-- ── RIGHT MAIN CONTENT ───────────────────────── -->
+    <div class="mp-dashboard-right">
+
+        <!-- Row 1: Stats + Connection Status (side by side) -->
+        <div class="mp-right-top">
+            <!-- Stat Cards -->
             <div class="mp-hero-stats">
                 <div class="mp-hero-stat mp-hero-stat--in">
                     <div class="mp-hero-stat__icon">
-                        <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
                     </div>
                     <div class="mp-hero-stat__info">
-                        <span class="mp-hero-stat__label"><?php esc_html_e( 'Tiền vào', 'monkeypay' ); ?></span>
-                        <span class="mp-hero-stat__value" id="mp-stat-in"><span class="mp-balance-skeleton mp-balance-skeleton--sm"></span></span>
+                        <span class="mp-hero-stat__label">Tiền vào</span>
+                        <span class="mp-hero-stat__value" id="mp-stat-in">0 ₫</span>
                     </div>
                     <span class="mp-hero-stat__count" id="mp-stat-in-count">0 GD</span>
                 </div>
+
                 <div class="mp-hero-stat mp-hero-stat--out">
                     <div class="mp-hero-stat__icon">
-                        <svg viewBox="0 0 24 24"><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
                     </div>
                     <div class="mp-hero-stat__info">
-                        <span class="mp-hero-stat__label"><?php esc_html_e( 'Tiền ra', 'monkeypay' ); ?></span>
-                        <span class="mp-hero-stat__value" id="mp-stat-out"><span class="mp-balance-skeleton mp-balance-skeleton--sm"></span></span>
+                        <span class="mp-hero-stat__label">Tiền ra</span>
+                        <span class="mp-hero-stat__value" id="mp-stat-out">0 ₫</span>
                     </div>
                     <span class="mp-hero-stat__count" id="mp-stat-out-count">0 GD</span>
                 </div>
+
                 <div class="mp-hero-stat mp-hero-stat--total">
                     <div class="mp-hero-stat__icon">
-                        <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
                     </div>
                     <div class="mp-hero-stat__info">
-                        <span class="mp-hero-stat__label"><?php esc_html_e( 'Tổng GD', 'monkeypay' ); ?></span>
-                        <span class="mp-hero-stat__value" id="mp-stat-total">—</span>
+                        <span class="mp-hero-stat__label">Tổng giao dịch</span>
+                        <span class="mp-hero-stat__value" id="mp-stat-total">0</span>
                     </div>
-                    <span class="mp-hero-stat__count" id="mp-stat-period"><?php esc_html_e( 'Hôm nay', 'monkeypay' ); ?></span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ═══ Connection Path Visual ═══ -->
-        <div class="mp-connection-path mp-fade-up" id="mp-connection-path">
-            <div class="mp-connection-path__header">
-                <h3><?php esc_html_e( 'Luồng kết nối', 'monkeypay' ); ?></h3>
-                <button type="button" class="monkeypay-btn monkeypay-btn--sm monkeypay-btn--ghost" id="mp-test-flow">
-                    <svg viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-                    <?php esc_html_e( 'Kiểm tra', 'monkeypay' ); ?>
-                </button>
-            </div>
-            <div class="mp-flow">
-                <!-- Node: Bank -->
-                <div class="mp-flow-node" id="mp-flow-bank">
-                    <div class="mp-flow-node__icon mp-flow-node__icon--bank">
-                        <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 14v3"/><path d="M12 14v3"/><path d="M16 14v3"/></svg>
-                    </div>
-                    <span class="mp-flow-node__label"><?php esc_html_e( 'Ngân hàng', 'monkeypay' ); ?></span>
-                    <span class="mp-flow-node__status" id="mp-flow-bank-status">
-                        <span class="mp-status-dot mp-status-dot--checking"></span>
-                    </span>
-                </div>
-
-                <!-- Connector -->
-                <div class="mp-flow-connector">
-                    <div class="mp-flow-connector__line" id="mp-flow-line-1"></div>
-                    <svg class="mp-flow-connector__arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-                </div>
-
-                <!-- Node: Server -->
-                <div class="mp-flow-node" id="mp-flow-server">
-                    <div class="mp-flow-node__icon mp-flow-node__icon--server">
-                        <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-                    </div>
-                    <span class="mp-flow-node__label"><?php esc_html_e( 'MonkeyPay Server', 'monkeypay' ); ?></span>
-                    <span class="mp-flow-node__status" id="mp-flow-server-status">
-                        <span class="mp-status-dot mp-status-dot--checking"></span>
-                    </span>
-                </div>
-
-                <!-- Connector -->
-                <div class="mp-flow-connector">
-                    <div class="mp-flow-connector__line" id="mp-flow-line-2"></div>
-                    <svg class="mp-flow-connector__arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-                </div>
-
-                <!-- Node: Website -->
-                <div class="mp-flow-node" id="mp-flow-website">
-                    <div class="mp-flow-node__icon mp-flow-node__icon--website">
-                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    </div>
-                    <span class="mp-flow-node__label"><?php esc_html_e( 'Website', 'monkeypay' ); ?></span>
-                    <span class="mp-flow-node__status" id="mp-flow-website-status">
-                        <span class="mp-status-dot mp-status-dot--checking"></span>
-                    </span>
                 </div>
             </div>
 
-            <!-- Webhook URL (compact, inline) -->
-            <div class="mp-flow-webhook">
-                <span class="mp-flow-webhook__label"><?php esc_html_e( 'Webhook URL:', 'monkeypay' ); ?></span>
-                <code class="mp-flow-webhook__url" id="webhook-url"><?php echo esc_html( rest_url( 'monkeypay/v1/webhook' ) ); ?></code>
-                <button type="button" class="monkeypay-btn-copy" data-copy="<?php echo esc_attr( rest_url( 'monkeypay/v1/webhook' ) ); ?>">
-                    <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- ═══ Quick Actions ═══ -->
-        <div class="mp-quick-actions mp-fade-up">
-            <h3 class="mp-quick-actions__title"><?php esc_html_e( 'Thao Tác Nhanh', 'monkeypay' ); ?></h3>
-            <div class="mp-quick-actions__grid">
-
-                <!-- Card: Kết Nối — click chuyển trang, hiển thị logo connections bên trong -->
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay-connections' ) ); ?>" class="mp-qa-card mp-qa-card--rich">
-                    <div class="mp-qa-card__top">
-                        <div class="mp-qa-card__icon mp-qa-card__icon--connect">
-                            <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <!-- Connection Flow -->
+            <div class="mp-conn-compact" id="mp-connection-path">
+                <div class="mp-conn-compact__header">
+                    <span class="mp-conn-compact__title">Trạng thái kết nối</span>
+                    <button type="button" class="mp-conn-compact__refresh" id="mp-test-flow" title="Kiểm tra lại">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mp-conn-compact__flow">
+                    <div class="mp-conn-compact__node" id="mp-flow-bank">
+                        <div class="mp-conn-compact__icon mp-conn-compact__icon--bank">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
+                            </svg>
                         </div>
-                        <div class="mp-qa-card__info">
-                            <span class="mp-qa-card__label"><?php esc_html_e( 'Kết Nối', 'monkeypay' ); ?></span>
-                            <span class="mp-qa-card__desc"><?php esc_html_e( 'Cấu hình tích hợp', 'monkeypay' ); ?></span>
-                        </div>
-                        <svg class="mp-qa-card__arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                        <span class="mp-conn-compact__label">Bank</span>
+                        <span class="mp-conn-compact__status" id="mp-flow-bank-status">
+                            <span class="mp-status-dot mp-status-dot--checking"></span>
+                        </span>
                     </div>
-                    <div class="mp-qa-card__inline-data" id="mp-qa-conn-logos">
-                        <div class="mp-dash-pills__loading"><div class="mp-spinner mp-spinner--sm"></div></div>
-                    </div>
-                </a>
 
-                <!-- Card: API Key — hiển thị keys bên trong + nút tạo mới góc phải -->
-                <div class="mp-qa-card mp-qa-card--rich mp-qa-card--interactive">
-                    <div class="mp-qa-card__top">
-                        <div class="mp-qa-card__icon mp-qa-card__icon--key">
-                            <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                    <div class="mp-conn-compact__line" id="mp-flow-line-1"></div>
+
+                    <div class="mp-conn-compact__node" id="mp-flow-server">
+                        <div class="mp-conn-compact__icon mp-conn-compact__icon--server">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/>
+                                <line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+                            </svg>
                         </div>
-                        <div class="mp-qa-card__info">
-                            <span class="mp-qa-card__label"><?php esc_html_e( 'API Keys', 'monkeypay' ); ?></span>
-                            <span class="mp-qa-card__desc"><?php esc_html_e( 'Xác thực tích hợp', 'monkeypay' ); ?></span>
-                        </div>
-                        <button type="button" class="mp-qa-card__add-btn" id="mp-qa-create-key" title="<?php esc_attr_e( 'Tạo API Key mới', 'monkeypay' ); ?>">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </button>
+                        <span class="mp-conn-compact__label">Server</span>
+                        <span class="mp-conn-compact__status" id="mp-flow-server-status">
+                            <span class="mp-status-dot mp-status-dot--checking"></span>
+                        </span>
                     </div>
-                    <div class="mp-qa-card__inline-data" id="mp-qa-apikeys-pills">
-                        <div class="mp-dash-pills__loading"><div class="mp-spinner mp-spinner--sm"></div></div>
+
+                    <div class="mp-conn-compact__line" id="mp-flow-line-2"></div>
+
+                    <div class="mp-conn-compact__node" id="mp-flow-website">
+                        <div class="mp-conn-compact__icon mp-conn-compact__icon--website">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                                <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                            </svg>
+                        </div>
+                        <span class="mp-conn-compact__label">Website</span>
+                        <span class="mp-conn-compact__status" id="mp-flow-website-status">
+                            <span class="mp-status-dot mp-status-dot--checking"></span>
+                        </span>
                     </div>
                 </div>
-
-                <!-- Card: Cổng Thanh Toán — hiển thị logo ngân hàng + nút thêm góc phải -->
-                <div class="mp-qa-card mp-qa-card--rich mp-qa-card--interactive">
-                    <div class="mp-qa-card__top">
-                        <div class="mp-qa-card__icon mp-qa-card__icon--gateways">
-                            <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                        </div>
-                        <div class="mp-qa-card__info">
-                            <span class="mp-qa-card__label"><?php esc_html_e( 'Cổng Thanh Toán', 'monkeypay' ); ?></span>
-                            <span class="mp-qa-card__desc"><?php esc_html_e( 'Phương thức thanh toán', 'monkeypay' ); ?></span>
-                        </div>
-                        <button type="button" class="mp-qa-card__add-btn" id="mp-qa-create-gateway" title="<?php esc_attr_e( 'Thêm cổng thanh toán', 'monkeypay' ); ?>">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </button>
-                    </div>
-                    <div class="mp-qa-card__inline-data" id="mp-qa-gateways-logos">
-                        <div class="mp-dash-pills__loading"><div class="mp-spinner mp-spinner--sm"></div></div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-
-        <!-- ═══ Transaction History Card ═══ -->
-        <div class="monkeypay-card mp-transactions-card mp-fade-up">
-            <div class="monkeypay-card__header">
-                <div class="monkeypay-card__header-left">
-                    <div class="monkeypay-card__icon">
-                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    </div>
-                    <h2><?php esc_html_e( 'Giao Dịch Gần Đây', 'monkeypay' ); ?></h2>
-                </div>
-                <div class="mp-tx-controls">
-                    <div class="mp-date-range">
-                        <input type="date" id="mp-date-from" class="mp-date-input" />
-                        <span class="mp-date-sep">—</span>
-                        <input type="date" id="mp-date-to" class="mp-date-input" />
-                    </div>
-                    <button type="button" class="monkeypay-btn monkeypay-btn--sm" id="mp-refresh-data">
-                        <svg viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-                        <?php esc_html_e( 'Làm mới', 'monkeypay' ); ?>
+                <div class="mp-conn-compact__webhook">
+                    <span class="mp-conn-compact__webhook-label">Webhook</span>
+                    <code class="mp-conn-compact__webhook-url"><?php echo esc_html( $webhook_url ); ?></code>
+                    <button type="button" class="monkeypay-btn-copy" data-copy="<?php echo esc_attr( $webhook_url ); ?>" title="Sao chép">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                        </svg>
                     </button>
                 </div>
             </div>
+        </div><!-- .mp-right-top -->
 
-            <!-- Transaction Table -->
-            <div class="mp-tx-table-wrap" id="mp-tx-table-wrap">
-                <div class="mp-tx-loading" id="mp-tx-loading">
-                    <div class="mp-spinner"></div>
-                    <span><?php esc_html_e( 'Đang tải dữ liệu...', 'monkeypay' ); ?></span>
+        <!-- Row 2: Cash Flow Chart -->
+        <div class="monkeypay-card mp-chart-section">
+            <div class="mp-chart-section__header">
+                <h3 class="mp-chart-section__title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    Biểu đồ dòng tiền
+                </h3>
+                <div class="mp-date-pills" id="mp-date-pills">
+                    <button type="button" class="mp-date-pill mp-date-pill--active" data-range="today">Hôm nay</button>
+                    <button type="button" class="mp-date-pill" data-range="yesterday">Hôm qua</button>
+                    <button type="button" class="mp-date-pill" data-range="7days">7 ngày</button>
+                    <button type="button" class="mp-date-pill" data-range="30days">30 ngày</button>
+                    <button type="button" class="mp-date-pill" data-range="this_week">Tuần này</button>
+                    <button type="button" class="mp-date-pill" data-range="last_week">Tuần trước</button>
+                    <button type="button" class="mp-date-pill" data-range="this_month">Tháng này</button>
+                    <button type="button" class="mp-date-pill" data-range="last_month">Tháng trước</button>
+                    <button type="button" class="mp-date-pill" data-range="custom">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px">
+                            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Khoảng thời gian
+                    </button>
                 </div>
-                <table class="mp-tx-table" id="mp-tx-table" style="display:none;">
+                <div class="mp-date-custom" id="mp-date-custom" style="display:none">
+                    <input type="date" id="mp-date-from" class="mp-date-input" />
+                    <span class="mp-date-sep">→</span>
+                    <input type="date" id="mp-date-to" class="mp-date-input" />
+                    <button type="button" class="monkeypay-btn monkeypay-btn--sm monkeypay-btn--primary" id="mp-apply-custom">Áp dụng</button>
+                </div>
+                <button type="button" class="mp-chart-section__refresh" id="mp-refresh-data" title="Làm mới dữ liệu">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                        <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="mp-chart-container">
+                <canvas id="mp-cashflow-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Row 3: Recent Transactions -->
+        <div class="monkeypay-card mp-transactions-card">
+            <div class="monkeypay-card__header">
+                <h3 class="monkeypay-card__title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                    </svg>
+                    Giao dịch gần đây
+                </h3>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay-transactions' ) ); ?>" class="monkeypay-btn monkeypay-btn--ghost monkeypay-btn--sm" id="mp-tx-view-all" style="display:none">
+                    Xem tất cả
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            </div>
+
+            <!-- Loading -->
+            <div id="mp-tx-loading" class="mp-tx-loading">
+                <div class="mp-spinner"></div>
+                <span>Đang tải giao dịch...</span>
+            </div>
+
+            <!-- Empty -->
+            <div id="mp-tx-empty" class="mp-tx-empty" style="display:none">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <span>Không có giao dịch nào trong khoảng thời gian này</span>
+            </div>
+
+            <!-- Table -->
+            <div id="mp-tx-table" class="mp-tx-table-wrap" style="display:none">
+                <table class="mp-tx-table">
                     <thead>
                         <tr>
-                            <th class="mp-tx-col-time"><?php esc_html_e( 'Thời gian', 'monkeypay' ); ?></th>
-                            <th class="mp-tx-col-desc"><?php esc_html_e( 'Nội dung', 'monkeypay' ); ?></th>
-                            <th class="mp-tx-col-amount"><?php esc_html_e( 'Số tiền', 'monkeypay' ); ?></th>
-                            <th class="mp-tx-col-balance"><?php esc_html_e( 'Số dư', 'monkeypay' ); ?></th>
+                            <th class="mp-tx-col-time">Thời gian</th>
+                            <th class="mp-tx-col-desc">Mô tả</th>
+                            <th class="mp-tx-col-amount">Số tiền</th>
+                            <th class="mp-tx-col-balance">Số dư</th>
                         </tr>
                     </thead>
                     <tbody id="mp-tx-tbody"></tbody>
                 </table>
-                <div class="mp-tx-empty" id="mp-tx-empty" style="display:none;">
-                    <svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                    <span><?php esc_html_e( 'Không có giao dịch trong khoảng thời gian này', 'monkeypay' ); ?></span>
-                </div>
-            </div>
-
-            <!-- View All link -->
-            <div class="mp-tx-view-all" id="mp-tx-view-all" style="display:none;">
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay&tab=transactions' ) ); ?>" class="mp-link-view-all">
-                    <?php esc_html_e( 'Xem tất cả giao dịch', 'monkeypay' ); ?>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
             </div>
         </div>
 
+    </div><!-- .mp-dashboard-right -->
+
+</div><!-- .mp-dashboard-layout -->
+
+<!-- ═══════════════════════════════════════════════════
+     MODALS (Create Key / Show Key / Create Gateway)
+     ═══════════════════════════════════════════════════ -->
+
+<!-- Create Key Modal -->
+<div class="mp-dash-modal-overlay" id="mp-create-key-modal" style="display:none">
+    <div class="mp-dash-modal">
+        <div class="mp-dash-modal__header">
+            <h3>Tạo API Key mới</h3>
+            <button type="button" class="mp-dash-modal__close" id="mp-create-modal-close">&times;</button>
+        </div>
+        <div class="mp-dash-modal__body">
+            <label class="mp-dash-modal__label" for="mp-new-key-label">Tên key (tuỳ chọn)</label>
+            <input type="text" id="mp-new-key-label" class="mp-dash-modal__input" placeholder="Ví dụ: Website chính">
+        </div>
+        <div class="mp-dash-modal__footer">
+            <button type="button" class="monkeypay-btn monkeypay-btn--ghost mp-dash-modal-cancel">Huỷ</button>
+            <button type="button" class="monkeypay-btn monkeypay-btn--primary" id="mp-confirm-create-key">Tạo Key</button>
+        </div>
     </div>
 </div>
 
-<!-- ═══ Create Key Modal (reused from API Keys page) ═══ -->
-<div id="mp-create-key-modal" class="mp-modal" aria-hidden="true">
-    <div class="mp-modal__backdrop"></div>
-    <div class="mp-modal__sheet" role="dialog" aria-modal="true">
-        <div class="mp-modal__drag-handle"><span></span></div>
-        <div class="mp-modal__header">
-            <div class="mp-modal__platform-info">
-                <div class="mp-modal__platform-icon" style="color: var(--mp-primary);">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="mp-modal__title"><?php esc_html_e( 'Tạo API Key Mới', 'monkeypay' ); ?></h3>
-                    <p class="mp-modal__subtitle"><?php esc_html_e( 'Đặt nhãn để phân biệt giữa các key', 'monkeypay' ); ?></p>
-                </div>
-            </div>
-            <button type="button" class="mp-modal__close" id="mp-create-modal-close" aria-label="<?php esc_attr_e( 'Đóng', 'monkeypay' ); ?>">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
+<!-- Show New Key Modal -->
+<div class="mp-dash-modal-overlay" id="mp-show-key-modal" style="display:none">
+    <div class="mp-dash-modal">
+        <div class="mp-dash-modal__header">
+            <h3>API Key đã tạo</h3>
+            <button type="button" class="mp-dash-modal__close mp-dash-modal-cancel">&times;</button>
         </div>
-        <div class="mp-modal__body">
-            <div class="mp-form-group">
-                <label class="mp-form-label" for="mp-new-key-label"><?php esc_html_e( 'Nhãn', 'monkeypay' ); ?> <span class="mp-form-opt">(<?php esc_html_e( 'tùy chọn', 'monkeypay' ); ?>)</span></label>
-                <p class="mp-form-hint" style="margin: 2px 0 10px;"><?php esc_html_e( 'Đặt tên để dễ phân biệt giữa các key.', 'monkeypay' ); ?></p>
-                <input type="text" id="mp-new-key-label" class="mp-form-input" placeholder="<?php esc_attr_e( 'Ví dụ: Production, Staging, Test...', 'monkeypay' ); ?>" maxlength="100">
-            </div>
-        </div>
-        <div class="mp-modal__actions mp-modal__actions--right" style="padding: 0 24px 24px; border-top: none; margin-top: 0;">
-            <button type="button" class="mp-btn mp-btn--ghost mp-dash-modal-cancel"><?php esc_html_e( 'Hủy', 'monkeypay' ); ?></button>
-            <button type="button" class="mp-btn mp-btn--primary" id="mp-confirm-create-key">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
+        <div class="mp-dash-modal__body">
+            <p class="mp-dash-modal__warn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
-                <?php esc_html_e( 'Tạo Key', 'monkeypay' ); ?>
-            </button>
+                Hãy sao chép key này ngay. Bạn sẽ không thể xem lại.
+            </p>
+            <div class="mp-dash-modal__key-display">
+                <code id="mp-new-key-value"></code>
+                <button type="button" class="monkeypay-btn-copy" id="mp-copy-new-key" data-copy="">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="mp-dash-modal__footer">
+            <button type="button" class="monkeypay-btn monkeypay-btn--primary mp-dash-modal-cancel">Đóng</button>
         </div>
     </div>
 </div>
 
-<!-- ═══ Show New Key Modal ═══ -->
-<div id="mp-show-key-modal" class="mp-modal" aria-hidden="true">
-    <div class="mp-modal__backdrop"></div>
-    <div class="mp-modal__sheet" role="dialog" aria-modal="true">
-        <div class="mp-modal__drag-handle"><span></span></div>
-        <div class="mp-modal__header">
-            <div class="mp-modal__platform-info">
-                <div class="mp-modal__platform-icon" style="color: var(--mp-success); background: rgba(16, 185, 129, 0.1);">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
+<!-- Create Gateway Modal -->
+<div class="mp-dash-modal-overlay" id="mp-create-gateway-modal" style="display:none">
+    <div class="mp-dash-modal">
+        <div class="mp-dash-modal__header">
+            <h3>Thêm cổng thanh toán</h3>
+            <button type="button" class="mp-dash-modal__close" id="mp-gateway-modal-close">&times;</button>
+        </div>
+        <div class="mp-dash-modal__body">
+            <!-- Bank Select -->
+            <label class="mp-dash-modal__label">Ngân hàng</label>
+            <div class="mp-bank-select">
+                <div class="mp-bank-select__trigger" id="mp-gw-bank-trigger">
+                    <span class="mp-bank-select__placeholder">Chọn ngân hàng...</span>
+                    <svg class="mp-bank-select__chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
-                <div>
-                    <h3 class="mp-modal__title" style="color: var(--mp-success);"><?php esc_html_e( 'API Key Đã Tạo!', 'monkeypay' ); ?></h3>
-                    <p class="mp-modal__subtitle"><?php esc_html_e( 'Sao chép ngay — key sẽ không hiển thị lại', 'monkeypay' ); ?></p>
+                <input type="hidden" id="mp-gw-bank-code" />
+                <div class="mp-bank-select__dropdown" id="mp-gw-bank-dropdown">
+                    <?php
+                    $banks = [
+                        [ 'code' => 'mbbank',      'name' => 'MB Bank',      'logo' => 'https://api.vietqr.io/img/MB.png' ],
+                        [ 'code' => 'vpbank',      'name' => 'VPBank',       'logo' => 'https://api.vietqr.io/img/VPB.png' ],
+                        [ 'code' => 'vietcombank', 'name' => 'Vietcombank',  'logo' => 'https://api.vietqr.io/img/VCB.png' ],
+                        [ 'code' => 'bidv',        'name' => 'BIDV',         'logo' => 'https://api.vietqr.io/img/BIDV.png' ],
+                        [ 'code' => 'techcombank', 'name' => 'Techcombank',  'logo' => 'https://api.vietqr.io/img/TCB.png' ],
+                        [ 'code' => 'acb',         'name' => 'ACB',          'logo' => 'https://api.vietqr.io/img/ACB.png' ],
+                        [ 'code' => 'tpbank',      'name' => 'TPBank',       'logo' => 'https://api.vietqr.io/img/TPB.png' ],
+                        [ 'code' => 'sacombank',   'name' => 'Sacombank',    'logo' => 'https://api.vietqr.io/img/STB.png' ],
+                    ];
+                    foreach ( $banks as $bank ) :
+                    ?>
+                        <div class="mp-bank-option"
+                             data-code="<?php echo esc_attr( $bank['code'] ); ?>"
+                             data-name="<?php echo esc_attr( $bank['name'] ); ?>"
+                             data-logo="<?php echo esc_attr( $bank['logo'] ); ?>">
+                            <img src="<?php echo esc_url( $bank['logo'] ); ?>" alt="" width="24" height="24" />
+                            <span><?php echo esc_html( $bank['name'] ); ?></span>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
-            <button type="button" class="mp-modal__close mp-dash-modal-cancel" aria-label="<?php esc_attr_e( 'Đóng', 'monkeypay' ); ?>">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-        </div>
-        <div class="mp-modal__body">
-            <div class="mp-new-key-display">
-                <div class="mp-new-key-warning">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                    <span><?php esc_html_e( 'Sao chép ngay! Key sẽ', 'monkeypay' ); ?> <strong><?php esc_html_e( 'không hiển thị lại', 'monkeypay' ); ?></strong>.</span>
-                </div>
-                <div class="mp-new-key-box">
-                    <code id="mp-new-key-value" class="mp-new-key-code"></code>
-                    <button type="button" class="mp-btn mp-btn--outline mp-btn--sm monkeypay-btn-copy" id="mp-copy-new-key" data-copy="">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
-                        <?php esc_html_e( 'Sao chép', 'monkeypay' ); ?>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="mp-modal__actions" style="padding: 0 24px 24px;">
-            <span></span>
-            <div class="mp-modal__actions-right">
-                <button type="button" class="mp-btn mp-btn--primary mp-dash-modal-cancel"><?php esc_html_e( 'Đã sao chép, đóng', 'monkeypay' ); ?></button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- ═══ Create Gateway Modal ═══ -->
-<div id="mp-create-gateway-modal" class="mp-modal" aria-hidden="true">
-    <div class="mp-modal__backdrop"></div>
-    <div class="mp-modal__sheet" role="dialog" aria-modal="true">
-        <div class="mp-modal__drag-handle"><span></span></div>
-        <div class="mp-modal__header">
-            <div class="mp-modal__platform-info">
-                <div class="mp-modal__platform-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.1);">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                        <line x1="1" y1="10" x2="23" y2="10"></line>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="mp-modal__title"><?php esc_html_e( 'Tạo Cổng Thanh Toán', 'monkeypay' ); ?></h3>
-                    <p class="mp-modal__subtitle"><?php esc_html_e( 'Chọn ngân hàng và nhập thông tin tài khoản', 'monkeypay' ); ?></p>
-                </div>
-            </div>
-            <button type="button" class="mp-modal__close" id="mp-gateway-modal-close" aria-label="<?php esc_attr_e( 'Đóng', 'monkeypay' ); ?>">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-        </div>
-        <div class="mp-modal__body">
-            <!-- Bank Selector -->
-            <div class="mp-form-group">
-                <label class="mp-form-label"><?php esc_html_e( 'Ngân hàng', 'monkeypay' ); ?> <span style="color:var(--mp-error);">*</span></label>
-                <div class="mp-bank-select" id="mp-gw-bank-select">
-                    <div class="mp-bank-select__trigger" id="mp-gw-bank-trigger">
-                        <span class="mp-bank-select__placeholder"><?php esc_html_e( 'Chọn ngân hàng...', 'monkeypay' ); ?></span>
-                        <svg class="mp-bank-select__chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                    </div>
-                    <div class="mp-bank-select__dropdown" id="mp-gw-bank-dropdown">
-                        <div class="mp-bank-option" data-code="mbbank" data-name="MB Bank" data-logo="https://api.vietqr.io/img/MB.png" data-bin="970422">
-                            <img src="https://api.vietqr.io/img/MB.png" alt="MB Bank" class="mp-bank-option__logo" />
-                            <span class="mp-bank-option__name">MB Bank</span>
-                        </div>
-                        <div class="mp-bank-option" data-code="vpbank" data-name="VPBank" data-logo="https://api.vietqr.io/img/VPB.png" data-bin="970432">
-                            <img src="https://api.vietqr.io/img/VPB.png" alt="VPBank" class="mp-bank-option__logo" />
-                            <span class="mp-bank-option__name">VPBank</span>
-                        </div>
-                        <div class="mp-bank-option" data-code="vietcombank" data-name="Vietcombank" data-logo="https://api.vietqr.io/img/VCB.png" data-bin="970436">
-                            <img src="https://api.vietqr.io/img/VCB.png" alt="Vietcombank" class="mp-bank-option__logo" />
-                            <span class="mp-bank-option__name">Vietcombank</span>
-                        </div>
-                        <div class="mp-bank-option" data-code="bidv" data-name="BIDV" data-logo="https://api.vietqr.io/img/BIDV.png" data-bin="970418">
-                            <img src="https://api.vietqr.io/img/BIDV.png" alt="BIDV" class="mp-bank-option__logo" />
-                            <span class="mp-bank-option__name">BIDV</span>
-                        </div>
-                    </div>
-                    <input type="hidden" id="mp-gw-bank-code" value="" />
-                </div>
-            </div>
             <!-- Account Number -->
-            <div class="mp-form-group">
-                <label class="mp-form-label" for="mp-gw-account-number"><?php esc_html_e( 'Số tài khoản', 'monkeypay' ); ?> <span style="color:var(--mp-error);">*</span></label>
-                <input type="text" id="mp-gw-account-number" class="mp-form-input" placeholder="<?php esc_attr_e( 'Ví dụ: 0962794917', 'monkeypay' ); ?>" maxlength="30">
-                <p class="mp-form-hint"><?php esc_html_e( 'Số tài khoản ngân hàng nhận thanh toán.', 'monkeypay' ); ?></p>
-            </div>
+            <label class="mp-dash-modal__label" for="mp-gw-account-number" style="margin-top:16px">Số tài khoản</label>
+            <input type="text" id="mp-gw-account-number" class="mp-dash-modal__input" placeholder="Nhập số tài khoản" />
+
             <!-- Account Name -->
-            <div class="mp-form-group">
-                <label class="mp-form-label" for="mp-gw-account-name"><?php esc_html_e( 'Tên chủ tài khoản', 'monkeypay' ); ?></label>
-                <input type="text" id="mp-gw-account-name" class="mp-form-input" placeholder="<?php esc_attr_e( 'Ví dụ: HO LE MINH TUAN', 'monkeypay' ); ?>" maxlength="100" style="text-transform:uppercase;">
-                <p class="mp-form-hint"><?php esc_html_e( 'Tên chủ tài khoản viết IN HOA, không dấu.', 'monkeypay' ); ?></p>
-            </div>
+            <label class="mp-dash-modal__label" for="mp-gw-account-name" style="margin-top:12px">Chủ tài khoản</label>
+            <input type="text" id="mp-gw-account-name" class="mp-dash-modal__input" placeholder="VD: NGUYEN VAN A" />
         </div>
-        <div class="mp-modal__actions mp-modal__actions--right" style="padding: 16px 24px 24px; margin-top: 8px;">
-            <button type="button" class="mp-btn mp-btn--ghost mp-gw-modal-cancel"><?php esc_html_e( 'Hủy', 'monkeypay' ); ?></button>
-            <button type="button" class="mp-btn mp-btn--primary" id="mp-confirm-create-gateway">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                    <polyline points="7 3 7 8 15 8"></polyline>
-                </svg>
-                <?php esc_html_e( 'Tạo cổng thanh toán', 'monkeypay' ); ?>
-            </button>
+        <div class="mp-dash-modal__footer">
+            <button type="button" class="monkeypay-btn monkeypay-btn--ghost mp-gw-modal-cancel">Huỷ</button>
+            <button type="button" class="monkeypay-btn monkeypay-btn--primary" id="mp-confirm-create-gateway">Thêm cổng</button>
         </div>
     </div>
 </div>
 
-<!-- Dashboard data for JS -->
-<script>
-    window.mpPlatformMeta = <?php echo wp_json_encode( $platform_meta ); ?>;
-    window.mpConnections  = <?php echo wp_json_encode( $connections ); ?>;
-</script>
+    </div><!-- .monkeypay-admin-page -->
+</div><!-- .monkeypay-admin-wrap -->

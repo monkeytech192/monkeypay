@@ -4,7 +4,7 @@ Tags: payment, bank-transfer, woocommerce, vietnam, mb-bank, webhook, lark
 Requires at least: 5.8
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 3.0.0
+Stable tag: 3.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,6 +58,22 @@ Yes. The Lark connection includes a drag-drop card builder that lets you customi
 MonkeyPay implements multiple security layers: HMAC webhook verification, WordPress nonce validation, capability checks, input sanitization, and output escaping.
 
 == Changelog ==
+
+= 3.3.0 =
+* Google OAuth popup flow for seamless registration
+* Account switching for Google-authenticated users
+* Transaction Management admin page with real-time tracking
+* Structured logging system with log rotation
+* Dashboard layout improvements
+
+= 3.2.0 =
+* Self-hosted API key system with create/revoke/manage
+* Built-in REST API documentation page
+* Public API endpoints for external integrations
+
+= 3.1.0 =
+* Self-hosted update checker for plugin auto-update
+* CSS modular architecture (18 partials)
 
 = 3.0.0 =
 * Major architecture refactor — modular REST API (6 specialized modules)

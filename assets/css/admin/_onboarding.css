@@ -846,3 +846,308 @@
 /* ─── Plan Info ──────────────────────────────────── */
 
 .monkeypay-onboarding-plan-info {
+    margin: 16px 0;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+    border: 1px solid #86efac;
+    border-radius: 10px;
+}
+
+.monkeypay-onboarding-plan-info .monkeypay-plan-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.monkeypay-onboarding-plan-info strong {
+    display: block;
+    font-size: 13px;
+    color: #065f46;
+}
+
+.monkeypay-onboarding-plan-info span {
+    font-size: 11px;
+    color: #047857;
+}
+
+/* ─── Onboarding Buttons ─────────────────────────── */
+
+.monkeypay-onboarding-btn {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+}
+
+.monkeypay-onboarding-btn--primary {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+}
+
+.monkeypay-onboarding-btn--primary:hover {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+}
+
+.monkeypay-onboarding-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ─── Messages ───────────────────────────────────── */
+
+.monkeypay-onboarding-msg--error {
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    color: #991b1b;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.monkeypay-onboarding-msg--success {
+    padding: 12px 16px;
+    background: #ecfdf5;
+    border: 1px solid #6ee7b7;
+    border-radius: 10px;
+    color: #065f46;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+/* ─── Forgot Link ────────────────────────────────── */
+
+.monkeypay-forgot-link {
+    text-align: center;
+    margin-top: 14px;
+}
+
+.monkeypay-forgot-link a {
+    font-size: 13px;
+    color: var(--mp-primary, #06b6d4);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.monkeypay-forgot-link a:hover {
+    text-decoration: underline;
+}
+
+/* ─── Footer ─────────────────────────────────────── */
+
+.monkeypay-onboarding-footer {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.monkeypay-onboarding-footer span {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* ═══════════════════════════════════════════════════
+   Google OAuth Button
+   ═══════════════════════════════════════════════════ */
+
+.monkeypay-oauth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.monkeypay-oauth-divider::before,
+.monkeypay-oauth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+}
+
+.monkeypay-oauth-divider span {
+    font-size: 12px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.monkeypay-google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.monkeypay-google-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+.monkeypay-google-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.monkeypay-google-icon {
+    flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   2FA / OTP Form
+   ═══════════════════════════════════════════════════ */
+
+.monkeypay-2fa-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.monkeypay-2fa-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 16px;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(14, 116, 144, 0.1));
+    border-radius: 20px;
+    color: var(--mp-primary, #06b6d4);
+}
+
+.monkeypay-2fa-header h3 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--mp-text, #0f172a);
+}
+
+.monkeypay-2fa-header p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--mp-text-muted, #94a3b8);
+}
+
+/* OTP 6-digit grid */
+.monkeypay-otp-inputs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.monkeypay-otp-digit {
+    width: 48px !important;
+    height: 56px !important;
+    text-align: center;
+    font-size: 22px !important;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    background: #fff;
+    color: var(--mp-text, #0f172a);
+    outline: none;
+    transition: all 0.2s ease;
+    padding: 0 !important;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.monkeypay-otp-digit::-webkit-outer-spin-button,
+.monkeypay-otp-digit::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.monkeypay-otp-digit:focus {
+    border-color: var(--mp-primary, #06b6d4) !important;
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+}
+
+.monkeypay-otp-digit:not(:placeholder-shown) {
+    border-color: var(--mp-primary, #06b6d4) !important;
+    background: rgba(6, 182, 212, 0.03);
+}
+
+.monkeypay-otp-separator {
+    font-size: 18px;
+    color: #cbd5e1;
+    font-weight: 300;
+    user-select: none;
+    margin: 0 2px;
+}
+
+/* ═══════════════════════════════════════════════════
+   Password Strength Meter
+   ═══════════════════════════════════════════════════ */
+
+.monkeypay-pw-strength {
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.monkeypay-pw-strength.pw-weak {
+    color: #ef4444;
+}
+
+.monkeypay-pw-strength.pw-medium {
+    color: #f59e0b;
+}
+
+.monkeypay-pw-strength.pw-good {
+    color: #3b82f6;
+}
+
+.monkeypay-pw-strength.pw-strong {
+    color: #10b981;
+}
+
+/* ═══════════════════════════════════════════════════
+   Onboarding Responsive
+   ═══════════════════════════════════════════════════ */
+
+@media (max-width: 520px) {
+    .monkeypay-onboarding-card {
+        padding: 28px 20px;
+        border-radius: 16px;
+    }
+
+    .monkeypay-onboarding-field-row {
+        grid-template-columns: 1fr;
+    }
+
+    .monkeypay-otp-digit {
+        width: 40px !important;
+        height: 48px !important;
+        font-size: 18px !important;
+    }
+
+    .monkeypay-otp-inputs {
+        gap: 5px;
+    }
+}

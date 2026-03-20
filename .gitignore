@@ -1,3 +1,6 @@
+# Backend OAuth (deployed separately on shared hosting)
+backend/
+
 # Documentation (internal only)
 docs/
 
@@ -18,6 +21,7 @@ vendor/
 
 # Logs
 *.log
+logs/
 
 # Test artifacts
 probe-result.txt

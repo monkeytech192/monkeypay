@@ -5,6 +5,36 @@ All notable changes to MonkeyPay will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2025-03-21
+
+### Added
+- **Google OAuth Popup Flow**: Google sign-in now opens in a centered popup window (500×600px) instead of full-page redirect, preserving form context
+  - Automatic popup-to-parent communication via `postMessage`
+  - Graceful fallback to redirect mode if popup is blocked
+- **Account Switching**: "Đổi tài khoản Google" button on both the success banner and pre-filled form, allowing users to re-authenticate with a different Google account
+- **Transaction Management Page**: New admin page at `MonkeyPay > Giao Dịch` with real-time transaction tracking
+  - Status badge pills (Pending / Completed / Failed / Expired)
+  - Amount formatting with VND currency
+  - Search and filter by status, date range
+  - Auto-refresh with configurable interval
+  - Transaction detail modal with timeline view
+- **Structured Logging System**: `MonkeyPay_Logger` class for file-based structured logging
+  - Separate channels: `api.log`, `error.log`
+  - Log rotation and configurable log level
+
+### Changed
+- **Google OAuth UX**: Improved post-authentication flow — pre-filled register form now clearly shows which Google account is linked with option to switch
+- **Onboarding Form**: Email field locked (read-only) with visual indicator when pre-filled from Google, password field automatically hidden for OAuth users
+- **Dashboard Layout**: Updated dashboard with direct link to Transaction Management page
+- **Architecture Diagram**: README updated to reflect v3.3.0 module additions
+
+### Fixed
+- Google OAuth registration failing when password validation was triggered unnecessarily
+- Form state not fully resetting when switching between manual and Google registration
+- Edge case where popup callback could fire twice on slow connections
+
+---
+
 ## [3.2.0] - 2025-03-20
 
 ### Added

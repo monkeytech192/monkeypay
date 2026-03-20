@@ -63,12 +63,16 @@ class MonkeyPay_Webhook {
         }
 
         // Log webhook
-        error_log( '[MonkeyPay] Webhook received: ' . $event );
+        MonkeyPay_Logger::webhook( 'Webhook received: ' . $event, $data );
 
         // Dispatch events
         switch ( $event ) {
             case 'payment_completed':
                 $this->handle_payment_completed( $data );
+                break;
+
+            case 'bank_transaction':
+                $this->handle_bank_transaction( $data );
                 break;
 
             case 'session_expired':
@@ -87,6 +91,58 @@ class MonkeyPay_Webhook {
         }
 
         return new WP_REST_Response( [ 'success' => true ], 200 );
+    }
+
+    /**
+     * Handle bank_transaction event — BDSD notification from Cloud Run.
+     * Dispatches to Lark/connections for ALL bank transactions (not just payment matches).
+     *
+     * @param array $data Webhook payload from Cloud Run
+     */
+    private function handle_bank_transaction( $data ) {
+        $amount       = isset( $data['amount'] ) ? floatval( $data['amount'] ) : 0;
+        $is_credit    = isset( $data['is_credit'] ) ? (bool) $data['is_credit'] : ( $amount > 0 );
+        $description  = isset( $data['description'] ) ? sanitize_text_field( $data['description'] ) : '';
+        $account_no   = isset( $data['account_number'] ) ? sanitize_text_field( $data['account_number'] ) : '';
+        $bank_name    = isset( $data['bank_name'] ) ? sanitize_text_field( $data['bank_name'] ) : 'MB Bank';
+        $tx_date      = isset( $data['transaction_date'] ) ? sanitize_text_field( $data['transaction_date'] ) : current_time( 'mysql' );
+
+        // Format date for Lark display
+        if ( strpos( $tx_date, 'T' ) !== false ) {
+            $tx_date = date( 'd/m/Y H:i:s', strtotime( $tx_date ) );
+        }
+
+        // Build data for Lark formatter (reuse existing template variables)
+        $dispatch_data = [
+            'amount'       => $amount,
+            'payment_note' => $description,
+            'description'  => $description,
+            'bank_name'    => $bank_name,
+            'account_no'   => $account_no,
+            'matched_at'   => $tx_date,
+            'tx_id'        => isset( $data['bdsd_id'] ) ? 'BDSD-' . $data['bdsd_id'] : '',
+        ];
+
+        // Dispatch to connections: payment_received (credit) or payment_sent (debit)
+        $event = $is_credit ? 'payment_received' : 'payment_sent';
+
+        $connections = MonkeyPay_Connections::get_instance();
+        $connections->dispatch_event( $event, $dispatch_data );
+
+        /**
+         * Fires when a bank transaction is received via BDSD webhook.
+         *
+         * @param array  $dispatch_data Formatted transaction data
+         * @param string $event         Event type (payment_received or payment_sent)
+         * @param array  $data          Raw webhook payload
+         */
+        do_action( 'monkeypay_bank_transaction', $dispatch_data, $event, $data );
+
+        MonkeyPay_Logger::webhook( "Bank transaction ({$event}): {$amount} VND", [
+            'account_no'  => $account_no,
+            'description' => $description,
+            'is_credit'   => $is_credit,
+        ] );
     }
 
     /**
@@ -114,7 +170,11 @@ class MonkeyPay_Webhook {
         $connections = MonkeyPay_Connections::get_instance();
         $connections->dispatch_event( 'payment_received', $data );
 
-        error_log( "[MonkeyPay] Payment confirmed: {$tx_id} — {$amount} VND — {$payment_note}" );
+        MonkeyPay_Logger::transaction( "Payment confirmed: {$tx_id}", [
+            'amount'       => $amount,
+            'payment_note' => $payment_note,
+            'tx_id'        => $tx_id,
+        ] );
     }
 
     /**
@@ -141,6 +201,6 @@ class MonkeyPay_Webhook {
             'message' => __( '⚠️ Phiên MB Bank đã hết hạn. Vui lòng đăng nhập lại và cập nhật session.', 'monkeypay' ),
         ], 3600 );
 
-        error_log( '[MonkeyPay] Session expired — admin notification set' );
+        MonkeyPay_Logger::webhook( 'Session expired — admin notification set' );
     }
 }

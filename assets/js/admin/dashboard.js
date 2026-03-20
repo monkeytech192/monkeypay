@@ -1,11 +1,11 @@
 /**
- * MonkeyPay Admin — Dashboard Page
+ * MonkeyPay Admin — Dashboard Page v4.1
  *
- * Bank data loading, transaction rendering, auto-refresh,
- * dashboard API key pills, connection logos, and create key modal.
+ * Bank data, Chart.js cash flow, pill date filter,
+ * transaction table, quick-action cards, modals, connection flow.
  *
  * @package MonkeyPay
- * @since   3.0.0
+ * @since   4.1.0
  */
 
 (function ($) {
@@ -13,34 +13,356 @@
 
     const MP = window.MonkeyPay;
 
-    // ─── Helpers ────────────────────────────────────
+    // ─── Date Helpers ───────────────────────────────
 
+    /**
+     * Convert yyyy-mm-dd → DD/MM/YYYY for API.
+     */
     function toApiDate(dateStr) {
-        // yyyy-mm-dd → DD/MM/YYYY
         if (!dateStr) return '';
         const [y, m, d] = dateStr.split('-');
         return `${d}/${m}/${y}`;
     }
 
-    function initDashboardDates() {
-        // Use Vietnam time (UTC+7) to get correct "today"
+    /**
+     * Get today's date in yyyy-mm-dd using Vietnam time (UTC+7).
+     */
+    function vnToday() {
         const now = new Date();
-        const vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-        const today = vnNow.toISOString().split('T')[0];
-        $('#mp-date-from').val(today);
-        $('#mp-date-to').val(today);
+        const vn = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+        return vn.toISOString().split('T')[0];
     }
 
     /**
-     * Mask an API key string: show first 6 + last 3 chars, middle replaced with dots.
-     * e.g. "mp_live_abcdefghijklmnop" → "mp_liv•••nop"
+     * Format a date string for the API: yyyy-mm-dd.
+     */
+    function ymd(date) {
+        const d = new Date(date);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
+    /**
+     * Calculate date range from a pill range key.
+     * Returns { from: 'yyyy-mm-dd', to: 'yyyy-mm-dd' }.
+     */
+    function getDateRange(rangeKey) {
+        const now = new Date();
+        const vn = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+        const today = ymd(vn);
+
+        switch (rangeKey) {
+            case 'today':
+                return { from: today, to: today };
+
+            case 'yesterday': {
+                const d = new Date(vn);
+                d.setDate(d.getDate() - 1);
+                const yd = ymd(d);
+                return { from: yd, to: yd };
+            }
+
+            case '7days': {
+                const d = new Date(vn);
+                d.setDate(d.getDate() - 6);
+                return { from: ymd(d), to: today };
+            }
+
+            case '30days': {
+                const d = new Date(vn);
+                d.setDate(d.getDate() - 29);
+                return { from: ymd(d), to: today };
+            }
+
+            case 'this_week': {
+                // Monday as start of week
+                const d = new Date(vn);
+                const day = d.getDay();
+                const diff = day === 0 ? 6 : day - 1; // Monday=0
+                d.setDate(d.getDate() - diff);
+                return { from: ymd(d), to: today };
+            }
+
+            case 'last_week': {
+                const d = new Date(vn);
+                const day = d.getDay();
+                const diff = day === 0 ? 6 : day - 1;
+                const thisMonday = new Date(d);
+                thisMonday.setDate(d.getDate() - diff);
+                const lastMonday = new Date(thisMonday);
+                lastMonday.setDate(thisMonday.getDate() - 7);
+                const lastSunday = new Date(thisMonday);
+                lastSunday.setDate(thisMonday.getDate() - 1);
+                return { from: ymd(lastMonday), to: ymd(lastSunday) };
+            }
+
+            case 'this_month': {
+                const start = new Date(vn.getFullYear(), vn.getMonth(), 1);
+                return { from: ymd(start), to: today };
+            }
+
+            case 'last_month': {
+                const start = new Date(vn.getFullYear(), vn.getMonth() - 1, 1);
+                const end = new Date(vn.getFullYear(), vn.getMonth(), 0);
+                return { from: ymd(start), to: ymd(end) };
+            }
+
+            default:
+                return { from: today, to: today };
+        }
+    }
+
+    // Active pill range
+    var currentRange = 'today';
+
+    /**
+     * Format raw transaction time to dd/mm/yy hh:mm:ss.
+     * Accepts ISO string, timestamp, or various date formats.
+     */
+    function formatTime(raw) {
+        if (!raw) return '—';
+
+        // If already in dd/mm/yyyy format from API, convert to dd/mm/yy
+        if (/^\d{2}\/\d{2}\/\d{4}/.test(raw)) {
+            var parts = raw.split(' ');
+            var datePart = parts[0].split('/');
+            var shortYear = datePart[2].substring(2);
+            var time = parts[1] || '';
+            return datePart[0] + '/' + datePart[1] + '/' + shortYear + (time ? ' ' + time : '');
+        }
+
+        try {
+            var d = new Date(raw);
+            if (isNaN(d.getTime())) return raw;
+            var dd = String(d.getDate()).padStart(2, '0');
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var yy = String(d.getFullYear()).substring(2);
+            var hh = String(d.getHours()).padStart(2, '0');
+            var mi = String(d.getMinutes()).padStart(2, '0');
+            var ss = String(d.getSeconds()).padStart(2, '0');
+            return dd + '/' + mm + '/' + yy + ' ' + hh + ':' + mi + ':' + ss;
+        } catch (e) {
+            return raw;
+        }
+    }
+
+    /**
+     * Mask an API key: show first 6 + last 3 chars.
      */
     function maskApiKey(key) {
         if (!key || key.length <= 10) return key || '';
         return key.substring(0, 6) + '•••' + key.substring(key.length - 3);
     }
 
-    // ─── Load Bank Dashboard ────────────────────────
+    // ─── Pill Date Filter ───────────────────────────
+
+    function initPillFilter() {
+        var $pills = $('#mp-date-pills');
+        var $customWrap = $('#mp-date-custom');
+        if (!$pills.length) return;
+
+        // Set initial dates
+        var initial = getDateRange('today');
+        $('#mp-date-from').val(initial.from);
+        $('#mp-date-to').val(initial.to);
+
+        // Pill click
+        $pills.on('click', '.mp-date-pill', function () {
+            var $pill = $(this);
+            var range = $pill.data('range');
+
+            // Toggle active
+            $pills.find('.mp-date-pill').removeClass('mp-date-pill--active');
+            $pill.addClass('mp-date-pill--active');
+
+            if (range === 'custom') {
+                $customWrap.slideDown(200);
+                return;
+            }
+
+            $customWrap.slideUp(200);
+            currentRange = range;
+
+            var dates = getDateRange(range);
+            $('#mp-date-from').val(dates.from);
+            $('#mp-date-to').val(dates.to);
+            loadBankDashboard();
+        });
+
+        // Apply custom range
+        $('#mp-apply-custom').on('click', function () {
+            currentRange = 'custom';
+            loadBankDashboard();
+        });
+    }
+
+    // ═══════════════════════════════════════════════════
+    // Chart.js Cash Flow
+    // ═══════════════════════════════════════════════════
+
+    var cashFlowChart = null;
+
+    /**
+     * Build or update the Chart.js mixed bar+line chart.
+     * @param {Array} txs - raw transactions array
+     */
+    function updateChart(txs) {
+        var canvas = document.getElementById('mp-cashflow-chart');
+        if (!canvas || typeof Chart === 'undefined') return;
+
+        // Aggregate by date
+        var dateMap = {};
+        (txs || []).forEach(function (tx) {
+            var rawDate = tx.transactionDate || tx.postDate || '';
+            var dateKey = rawDate.split(' ')[0] || rawDate; // Take date part
+            if (!dateKey) return;
+
+            if (!dateMap[dateKey]) {
+                dateMap[dateKey] = { credit: 0, debit: 0 };
+            }
+            var credit = parseFloat(tx.creditAmount || 0);
+            var debit = parseFloat(tx.debitAmount || 0);
+            dateMap[dateKey].credit += credit;
+            dateMap[dateKey].debit += debit;
+        });
+
+        // Sort dates
+        var labels = Object.keys(dateMap).sort();
+        var credits = labels.map(function (d) { return dateMap[d].credit; });
+        var debits = labels.map(function (d) { return dateMap[d].debit; });
+        var net = labels.map(function (d) { return dateMap[d].credit - dateMap[d].debit; });
+
+        // Format short labels
+        var shortLabels = labels.map(function (d) {
+            // Try: dd/mm/yyyy or yyyy-mm-dd
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(d)) {
+                return d.substring(0, 5); // dd/mm
+            }
+            if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+                var parts = d.split('-');
+                return parts[2] + '/' + parts[1]; // dd/mm
+            }
+            return d;
+        });
+
+        var chartData = {
+            labels: shortLabels,
+            datasets: [
+                {
+                    label: 'Tiền vào',
+                    type: 'bar',
+                    data: credits,
+                    backgroundColor: 'rgba(16, 185, 129, 0.65)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    order: 2,
+                },
+                {
+                    label: 'Tiền ra',
+                    type: 'bar',
+                    data: debits,
+                    backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    order: 2,
+                },
+                {
+                    label: 'Dòng tiền ròng',
+                    type: 'line',
+                    data: net,
+                    borderColor: 'rgba(6, 182, 212, 1)',
+                    backgroundColor: 'rgba(6, 182, 212, 0.08)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: 'rgba(6, 182, 212, 1)',
+                    pointBorderWidth: 2,
+                    fill: true,
+                    tension: 0.35,
+                    order: 1,
+                },
+            ],
+        };
+
+        var chartOpts = {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'rectRounded',
+                        padding: 16,
+                        font: { size: 11, weight: '500' },
+                    },
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleFont: { size: 12 },
+                    bodyFont: { size: 12 },
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function (ctx) {
+                            var val = ctx.parsed.y || 0;
+                            return ' ' + ctx.dataset.label + ': ' + MP.formatVND(Math.abs(val));
+                        },
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        font: { size: 11 },
+                        color: '#94a3b8',
+                    },
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.04)',
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        font: { size: 11 },
+                        color: '#94a3b8',
+                        callback: function (val) {
+                            if (Math.abs(val) >= 1e9) return (val / 1e9).toFixed(1) + 'B';
+                            if (Math.abs(val) >= 1e6) return (val / 1e6).toFixed(1) + 'M';
+                            if (Math.abs(val) >= 1e3) return (val / 1e3).toFixed(0) + 'K';
+                            return val;
+                        },
+                    },
+                },
+            },
+        };
+
+        if (cashFlowChart) {
+            cashFlowChart.data = chartData;
+            cashFlowChart.update('none');
+        } else {
+            cashFlowChart = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: chartData,
+                options: chartOpts,
+            });
+        }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // Load Bank Dashboard
+    // ═══════════════════════════════════════════════════
 
     async function loadBankDashboard() {
         const fromVal = $('#mp-date-from').val();
@@ -62,30 +384,87 @@
 
             if (summaryRes && summaryRes.success && summaryRes.data) {
                 const d = summaryRes.data;
-                // Balance: if null (multi-merchant mode), show account info instead
-                if (d.balance !== null && d.balance !== undefined) {
-                    $('#mp-balance-amount').text(MP.formatVND(d.balance));
-                } else {
-                    $('#mp-balance-amount').text(d.account_name || 'N/A');
-                    // Update label from "SỐ DƯ HIỆN TẠI" to "TÀI KHOẢN NHẬN"
-                    $('#mp-balance-label').text('TÀI KHOẢN NHẬN');
-                }
-                $('#mp-balance-account').text(
-                    (d.account_name || '') + (d.account_number ? ' • ' + d.account_number : '')
-                );
+
+                // Populate stats
                 $('#mp-stat-in').text(MP.formatVND(d.total_in));
                 $('#mp-stat-out').text(MP.formatVND(d.total_out));
                 $('#mp-stat-total').text(String(d.total_transactions || 0));
                 $('#mp-stat-in-count').text((d.count_in || 0) + ' GD');
                 $('#mp-stat-out-count').text((d.count_out || 0) + ' GD');
+
+                // Populate card holder (bank account name)
+                if (d.account_name) {
+                    $('#mp-card-holder').text(d.account_name);
+                }
             } else {
-                $('#mp-balance-amount').text('Không khả dụng');
-                $('#mp-balance-account').text('Kiểm tra kết nối server');
+                $('#mp-card-holder').text('—');
             }
         } catch (err) {
             console.error('Bank summary error:', err);
-            $('#mp-balance-amount').text('Lỗi kết nối');
-            $('#mp-balance-account').text(err.responseJSON?.message || err.statusText || '');
+            $('#mp-card-holder').text(err.responseJSON?.message || err.statusText || '');
+        }
+
+        // Fetch merchant info for Membership card display
+        try {
+            const usageRes = await $.ajax({
+                url: MP.restUrl + 'usage',
+                method: 'GET',
+                headers: { 'X-WP-Nonce': MP.nonce },
+            });
+
+            if (usageRes && usageRes.success && usageRes.data) {
+                const merchant = usageRes.data.merchant || {};
+                const apiKey = merchant.api_key || '';
+                const orgName = merchant.name || merchant.organization || merchant.org_name || '';
+                const planName = merchant.plan || merchant.plan_name || '';
+                const planExpiry = merchant.plan_expires || merchant.expires_at || merchant.plan_expiry || '';
+
+                // Organization name
+                if (orgName) {
+                    $('#mp-card-org').text(orgName);
+                } else {
+                    $('#mp-card-org').text('Chưa thiết lập');
+                }
+
+                // Plan badge
+                if (planName) {
+                    $('#mp-card-plan').text(planName.toUpperCase());
+                } else {
+                    $('#mp-card-plan').text('FREE');
+                }
+
+                // Plan expiry
+                if (planExpiry) {
+                    try {
+                        const d = new Date(planExpiry);
+                        if (!isNaN(d.getTime())) {
+                            const dd = String(d.getDate()).padStart(2, '0');
+                            const mm = String(d.getMonth() + 1).padStart(2, '0');
+                            const yy = d.getFullYear();
+                            $('#mp-card-expiry').text(dd + '/' + mm + '/' + yy);
+                        } else {
+                            $('#mp-card-expiry').text(planExpiry);
+                        }
+                    } catch (e) {
+                        $('#mp-card-expiry').text(planExpiry);
+                    }
+                } else {
+                    $('#mp-card-expiry').text('Vĩnh viễn');
+                }
+
+                // API Key masked
+                if (apiKey) {
+                    const masked = apiKey.substring(0, 6) + ' •••• ' + apiKey.substring(apiKey.length - 4);
+                    $('#mp-card-apikey').text(masked);
+                } else {
+                    $('#mp-card-apikey').text('Chưa có API Key');
+                }
+            }
+        } catch (err) {
+            console.error('Usage fetch error:', err);
+            $('#mp-card-org').text('N/A');
+            $('#mp-card-plan').text('—');
+            $('#mp-card-apikey').text('N/A');
         }
 
         try {
@@ -100,19 +479,22 @@
 
             if (historyRes && historyRes.success && historyRes.data) {
                 const txs = historyRes.data.transactions || [];
+
+                // Update chart with ALL transactions
+                updateChart(txs);
+
                 if (txs.length === 0) {
                     $('#mp-tx-table').hide();
                     $('#mp-tx-empty').show();
                     $('#mp-tx-view-all').hide();
                 } else {
-                    // Dashboard: show max 5 recent transactions
+                    // Dashboard: max 5 recent
                     const MAX_DASHBOARD_ROWS = 5;
                     const displayTxs = txs.slice(0, MAX_DASHBOARD_ROWS);
                     renderTransactions(displayTxs);
                     $('#mp-tx-empty').hide();
                     $('#mp-tx-table').show();
 
-                    // Show "View All" link if more transactions exist
                     if (txs.length > MAX_DASHBOARD_ROWS) {
                         $('#mp-tx-view-all').show();
                     } else {
@@ -123,12 +505,14 @@
                 $('#mp-tx-table').hide();
                 $('#mp-tx-empty').show();
                 $('#mp-tx-view-all').hide();
+                updateChart([]);
             }
         } catch (err) {
             console.error('Bank history error:', err);
             $('#mp-tx-loading').hide();
             $('#mp-tx-table').hide();
             $('#mp-tx-empty').show();
+            updateChart([]);
         }
 
         $('#mp-refresh-data').removeClass('loading');
@@ -148,7 +532,8 @@
             const amountClass = isCredit ? 'mp-tx-amount--credit' : 'mp-tx-amount--debit';
             const amountPrefix = isCredit ? '+' : '-';
             const desc = tx.transactionDesc || tx.description || '—';
-            const time = tx.transactionDate || tx.postDate || '';
+            const rawTime = tx.transactionDate || tx.postDate || '';
+            const time = formatTime(rawTime);
             const balance = tx.balanceAvailable;
 
             const tr = $('<tr>')
@@ -161,11 +546,8 @@
         });
     }
 
-    // ─── Dashboard API Keys ────────────────────────
+    // ─── Dashboard API Keys ─────────────────────────
 
-    /**
-     * Fetch active API keys and render as masked pills on dashboard.
-     */
     async function loadDashboardApiKeys() {
         const $container = $('#mp-qa-apikeys-pills');
         if (!$container.length) return;
@@ -180,7 +562,6 @@
             $container.empty();
 
             if (res && res.success && res.data) {
-                // Filter active keys only
                 const activeKeys = (res.data || []).filter(function (k) {
                     return k.status === 'active';
                 });
@@ -190,7 +571,6 @@
                     return;
                 }
 
-                // Show max 3 pills
                 var displayKeys = activeKeys.slice(0, 3);
                 displayKeys.forEach(function (key) {
                     var prefix = key.key_prefix || '';
@@ -206,7 +586,6 @@
                     $container.append($pill);
                 });
 
-                // Quick copy handler for pills
                 $container.off('click', '.mp-dash-pill__copy').on('click', '.mp-dash-pill__copy', function (e) {
                     e.stopPropagation();
                     var text = $(this).data('copy') || $(this).attr('data-copy') || '';
@@ -216,35 +595,26 @@
                     });
                 });
 
-                // Show +N more if exists
                 if (activeKeys.length > 3) {
                     $container.append('<span class="mp-dash-pill mp-dash-pill--more">+' + (activeKeys.length - 3) + '</span>');
                 }
             } else {
-                // No data or not successful — treat as empty (not an error)
                 $container.html('<span class="mp-dash-pills__empty">Chưa có API key nào</span>');
             }
         } catch (err) {
-            // API key not configured or server unreachable — show empty state, not error
             console.warn('Dashboard API keys:', err.statusText || 'unavailable');
             $container.html('<span class="mp-dash-pills__empty">Chưa có API key nào</span>');
         }
     }
 
-    // ─── Dashboard Connections ────────────────────────
+    // ─── Dashboard Connections ───────────────────────
 
-    /**
-     * Render enabled connections as mini logo badges on dashboard.
-     * Uses window.mpPlatformMeta and window.mpConnections injected by PHP.
-     */
     function loadDashboardConnections() {
         const $container = $('#mp-qa-conn-logos');
         if (!$container.length) return;
 
         const meta = window.mpPlatformMeta || {};
         const conns = window.mpConnections || [];
-
-        // Filter enabled connections
         var enabled = conns.filter(function (c) { return c.enabled; });
 
         $container.empty();
@@ -254,7 +624,6 @@
             return;
         }
 
-        // Deduplicate by platform
         var seen = {};
         enabled.forEach(function (conn) {
             var platform = conn.platform || '';
@@ -264,26 +633,44 @@
             var pm = meta[platform] || {};
             var color = pm.color || '#6366f1';
             var name = pm.label || platform;
+            var baseUrl = (MP.pluginUrl || '') + 'assets/img/platforms/';
 
-            var $badge = $('<span class="mp-dash-logo-badge" title="' + MP.escHtml(name) + '" style="--badge-color:' + color + '">' +
-                '<span class="mp-dash-logo-badge__dot"></span>' +
-                '<span class="mp-dash-logo-badge__name">' + MP.escHtml(name) + '</span>' +
-                '</span>');
-            $container.append($badge);
+            // Platform logo images (real PNGs)
+            var logos = {
+                lark: baseUrl + 'lark.png',
+            };
+
+            // SVG icon fallbacks for platforms without logo
+            var icons = {
+                telegram:      '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>',
+                slack:         '<path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5zm6 0H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5zm-6 0H5v1.5C5 16.33 4.33 17 3.5 17S2 16.33 2 15.5 2.67 14 3.5 14z"/>',
+                google_sheets: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/>',
+                discord:       '<circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M7.5 7.5c2-1 4.5-1 4.5-1s2.5 0 4.5 1M8 16.5s1 1.5 4 1.5 4-1.5 4-1.5"/>',
+                webhook:       '<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>',
+            };
+
+            var html;
+            if (logos[platform]) {
+                // Real logo image
+                html = '<img src="' + MP.escHtml(logos[platform]) + '" alt="' + MP.escHtml(name) + '"' +
+                    ' title="' + MP.escHtml(name) + '" class="mp-qa-conn-logo mp-qa-conn-logo--img" />';
+            } else {
+                // SVG icon fallback
+                var svgContent = icons[platform] || icons.webhook;
+                html = '<span class="mp-qa-conn-logo" title="' + MP.escHtml(name) + '" style="background:' + color + '">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    svgContent + '</svg></span>';
+            }
+            $container.append($(html));
         });
     }
 
-    // ─── Dashboard Payment Gateways ────────────────────
+    // ─── Dashboard Payment Gateways ─────────────────
 
-    /**
-     * Render configured payment gateways as bank logo badges on dashboard.
-     * Fetches from REST API GET /gateways to get real gateway data.
-     */
     function loadDashboardGateways() {
         var $container = $('#mp-qa-gateways-logos');
         if (!$container.length) return;
 
-        // Bank code to VietQR logo map
         var bankLogos = {
             mbbank:      'https://api.vietqr.io/img/MB.png',
             vpbank:      'https://api.vietqr.io/img/VPB.png',
@@ -302,7 +689,6 @@
                 xhr.setRequestHeader('X-WP-Nonce', MP.nonce);
             },
             success: function (res) {
-                // Response: { success: true, data: { gateways: [...] } }
                 var serverData = res.data || res || {};
                 var gateways = serverData.gateways || serverData || [];
                 if (!Array.isArray(gateways)) gateways = [];
@@ -318,20 +704,22 @@
                     var logo = bankLogos[code] || '';
                     var name = gw.bank_code || 'Bank';
                     var acct = gw.account_number || '';
-                    // Mask account number: show first 3 + last 3
                     var masked = acct.length > 6
                         ? acct.substring(0, 3) + '***' + acct.substring(acct.length - 3)
                         : acct;
 
-                    var html = '<span class="mp-dash-logo-badge" title="' + MP.escHtml(name + ' - ' + masked) + '" style="--badge-color:#10b981">';
                     if (logo) {
-                        html += '<img src="' + MP.escHtml(logo) + '" alt="' + MP.escHtml(name) + '" class="mp-dash-logo-badge__icon" style="width:18px;height:18px;border-radius:4px;object-fit:contain;" />';
+                        var html = '<img src="' + MP.escHtml(logo) + '" alt="' + MP.escHtml(name) + '"' +
+                            ' title="' + MP.escHtml(name + ' - ' + masked) + '"' +
+                            ' class="mp-qa-bank-logo" />';
+                        $container.append($(html));
                     } else {
-                        html += '<span class="mp-dash-logo-badge__dot"></span>';
+                        var html = '<span class="mp-dash-logo-badge" title="' + MP.escHtml(name + ' - ' + masked) + '" style="--badge-color:#10b981">' +
+                            '<span class="mp-dash-logo-badge__dot"></span>' +
+                            '<span class="mp-dash-logo-badge__name">' + MP.escHtml(name) + '</span>' +
+                            '</span>';
+                        $container.append($(html));
                     }
-                    html += '<span class="mp-dash-logo-badge__name">' + MP.escHtml(name) + '</span>';
-                    html += '</span>';
-                    $container.append($(html));
                 });
             },
             error: function () {
@@ -340,30 +728,24 @@
         });
     }
 
-    // ─── Dashboard Create Key Modal ────────────────────
+    // ─── Dashboard Create Key Modal ─────────────────
 
-    /**
-     * Handle create key flow directly from dashboard modal.
-     */
     function initDashboardCreateKey() {
         var $createModal = $('#mp-create-key-modal');
         var $showModal = $('#mp-show-key-modal');
         if (!$createModal.length) return;
 
-        // Open create modal from Quick Action
         $('#mp-qa-create-key').on('click', function (e) {
             e.preventDefault();
             $('#mp-new-key-label').val('');
             MP.openModal($createModal);
         });
 
-        // Close modals
         $(document).on('click', '.mp-dash-modal-cancel, #mp-create-modal-close', function () {
             MP.closeModal($createModal);
             MP.closeModal($showModal);
         });
 
-        // Confirm create key
         $('#mp-confirm-create-key').on('click', async function () {
             var $btn = $(this);
             if ($btn.prop('disabled')) return;
@@ -382,17 +764,11 @@
 
                 if (res && res.success && res.data) {
                     var fullKey = res.data.api_key || res.data.key || '';
-
-                    // Close create modal, open show key modal
                     MP.closeModal($createModal);
-
                     $('#mp-new-key-value').text(fullKey);
                     $('#mp-copy-new-key').attr('data-copy', fullKey).data('copy', fullKey);
                     MP.openModal($showModal);
-
-                    // Refresh dashboard API key pills
                     loadDashboardApiKeys();
-
                     if (typeof MP.showToast === 'function') {
                         MP.showToast('API Key đã tạo thành công!', 'success');
                     }
@@ -421,10 +797,6 @@
 
     // ─── Dashboard Create Gateway Modal ─────────────
 
-    /**
-     * Handle create gateway flow directly from dashboard modal.
-     * Custom bank dropdown with logos + POST /gateways.
-     */
     function initDashboardCreateGateway() {
         var $gwModal = $('#mp-create-gateway-modal');
         if (!$gwModal.length) return;
@@ -434,7 +806,6 @@
         var $hiddenInput = $('#mp-gw-bank-code');
         var selectedBank = null;
 
-        // Toggle dropdown
         $trigger.on('click', function (e) {
             e.stopPropagation();
             var isOpen = $dropdown.hasClass('mp-bank-select__dropdown--open');
@@ -442,7 +813,6 @@
             $trigger.toggleClass('mp-bank-select__trigger--open', !isOpen);
         });
 
-        // Select bank option
         $dropdown.on('click', '.mp-bank-option', function () {
             var $opt = $(this);
             selectedBank = {
@@ -451,30 +821,22 @@
                 logo: $opt.data('logo'),
             };
             $hiddenInput.val(selectedBank.code);
-
-            // Update trigger display
             $trigger.html(
                 '<img src="' + MP.escHtml(selectedBank.logo) + '" alt="" class="mp-bank-select__selected-logo" />' +
                 '<span class="mp-bank-select__selected-name">' + MP.escHtml(selectedBank.name) + '</span>' +
                 '<svg class="mp-bank-select__chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>'
             );
-
-            // Mark selected
             $dropdown.find('.mp-bank-option').removeClass('mp-bank-option--active');
             $opt.addClass('mp-bank-option--active');
-
-            // Close dropdown
             $dropdown.removeClass('mp-bank-select__dropdown--open');
             $trigger.removeClass('mp-bank-select__trigger--open');
         });
 
-        // Close dropdown on outside click
         $(document).on('click', function () {
             $dropdown.removeClass('mp-bank-select__dropdown--open');
             $trigger.removeClass('mp-bank-select__trigger--open');
         });
 
-        // Prevent dropdown close when clicking inside modal
         $gwModal.on('click', function (e) {
             if (!$(e.target).closest('.mp-bank-select').length) {
                 $dropdown.removeClass('mp-bank-select__dropdown--open');
@@ -482,11 +844,9 @@
             }
         });
 
-        // Open modal from Quick Action card
         $('#mp-qa-create-gateway').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            // Reset form
             selectedBank = null;
             $hiddenInput.val('');
             $trigger.html(
@@ -499,12 +859,10 @@
             MP.openModal($gwModal);
         });
 
-        // Close modal
         $(document).on('click', '.mp-gw-modal-cancel, #mp-gateway-modal-close', function () {
             MP.closeModal($gwModal);
         });
 
-        // Confirm create gateway
         $('#mp-confirm-create-gateway').on('click', async function () {
             var $btn = $(this);
             if ($btn.prop('disabled')) return;
@@ -546,7 +904,6 @@
                 if (res && res.success) {
                     MP.closeModal($gwModal);
                     loadDashboardGateways();
-
                     if (typeof MP.showToast === 'function') {
                         MP.showToast('Đã tạo cổng thanh toán thành công!', 'success');
                     }
@@ -568,13 +925,8 @@
         });
     }
 
-    // ─── Connection Path Status ────────────────────────
+    // ─── Connection Path Status ─────────────────────
 
-    /**
-     * Update a single flow node's status dot.
-     * @param {string} nodeId - e.g. 'mp-flow-bank'
-     * @param {'ok'|'error'|'checking'} status
-     */
     function setNodeStatus(nodeId, status) {
         var $status = $('#' + nodeId + '-status');
         var dotClass = 'mp-status-dot mp-status-dot--' + status;
@@ -582,11 +934,6 @@
         $status.html('<span class="' + dotClass + '"></span> ' + label);
     }
 
-    /**
-     * Update connector line between nodes.
-     * @param {string} lineId - e.g. 'mp-flow-line-1'
-     * @param {'ok'|'error'|''} status
-     */
     function setLineStatus(lineId, status) {
         var $line = $('#' + lineId);
         $line.removeClass('mp-flow-line--ok mp-flow-line--error');
@@ -595,20 +942,13 @@
         }
     }
 
-    /**
-     * Check connection flow: Bank → Server → Website
-     * Calls /monkeypay/v1/health which proxies to the MonkeyPay server.
-     * If the server is healthy and returns bank connectivity info, all nodes are OK.
-     */
     async function checkConnectionFlow() {
-        // Reset all to checking
         setNodeStatus('mp-flow-bank', 'checking');
         setNodeStatus('mp-flow-server', 'checking');
         setNodeStatus('mp-flow-website', 'checking');
         setLineStatus('mp-flow-line-1', '');
         setLineStatus('mp-flow-line-2', '');
 
-        // Website is always OK if this page loads
         setTimeout(function () {
             setNodeStatus('mp-flow-website', 'ok');
         }, 300);
@@ -621,12 +961,10 @@
                 timeout: 15000,
             });
 
-            // Server responded
             if (result && result.success) {
                 setNodeStatus('mp-flow-server', 'ok');
                 setLineStatus('mp-flow-line-2', 'ok');
 
-                // Check if bank info is available in health response
                 var data = result.data || {};
                 if (data.status === 'ok' || data.bank_connected !== false) {
                     setNodeStatus('mp-flow-bank', 'ok');
@@ -650,7 +988,7 @@
         }
     }
 
-    // ─── Copy Webhook URL ──────────────────────────────
+    // ─── Copy Webhook URL ───────────────────────────
 
     function initCopyButtons() {
         $(document).on('click', '.monkeypay-btn-copy', function () {
@@ -663,7 +1001,6 @@
                     showCopyFeedback($btn);
                 });
             } else {
-                // Fallback for older browsers
                 var $temp = $('<textarea>').val(text).appendTo('body').select();
                 document.execCommand('copy');
                 $temp.remove();
@@ -673,7 +1010,6 @@
     }
 
     function showCopyFeedback($btn) {
-        var $icon = $btn.find('svg');
         var originalHtml = $btn.html();
         $btn.html('<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>');
         $btn.css('color', 'var(--mp-success)');
@@ -683,32 +1019,35 @@
         }, 1500);
     }
 
-    // ─── Init ───────────────────────────────────────
+    // ═══════════════════════════════════════════════════
+    // Init
+    // ═══════════════════════════════════════════════════
 
     $(document).ready(function () {
         // Copy buttons (global)
         initCopyButtons();
 
-        // Dashboard — bank data + auto-refresh
-        if ($('#mp-dashboard-hero').length) {
-            initDashboardDates();
+        // Dashboard
+        if ($('.mp-dashboard-layout').length) {
+            // Pill date filter
+            initPillFilter();
+
+            // Bank data + auto-refresh
             loadBankDashboard();
             $('#mp-refresh-data').on('click', loadBankDashboard);
-            $('#mp-date-from, #mp-date-to').on('change', loadBankDashboard);
 
-            // Auto-refresh every 30 seconds (only when tab is visible)
+            // Auto-refresh every 30 seconds (only when visible)
             var autoRefreshTimer = setInterval(function () {
                 if (!document.hidden) {
                     loadBankDashboard();
                 }
             }, 30000);
 
-            // Cleanup on page unload
             $(window).on('beforeunload', function () {
                 clearInterval(autoRefreshTimer);
             });
 
-            // ── Dashboard Quick Action card data ──
+            // Quick Action data
             loadDashboardApiKeys();
             loadDashboardConnections();
             loadDashboardGateways();

@@ -35,6 +35,7 @@
 @import url('./admin/_connections.css');
 @import url('./admin/_api-keys.css');
 @import url('./admin/_api-docs.css');
+@import url('./admin/_transactions.css');
 
 /* ── 6. Overlays (Modals, Drawers) ────────────────── */
 @import url('./admin/_modals.css');

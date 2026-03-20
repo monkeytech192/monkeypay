@@ -26,10 +26,14 @@
     var admin = window.monkeypayAdmin || {};
 
     window.MonkeyPay = window.MonkeyPay || {
-        restUrl : admin.restUrl || '',
-        nonce   : admin.nonce   || '',
-        ajaxUrl : admin.ajaxUrl || '',
-        i18n    : admin.i18n    || {},
+        restUrl        : admin.restUrl        || '',
+        nonce          : admin.nonce          || '',
+        ajaxUrl        : admin.ajaxUrl        || '',
+        adminUrl       : admin.adminUrl       || '',
+        pluginUrl      : admin.pluginUrl      || '',
+        apiUrl         : admin.apiUrl         || '',
+        authProvider   : admin.authProvider   || 'password',
+        i18n           : admin.i18n           || {},
     };
 
     // All page-specific logic is handled by individual module files
