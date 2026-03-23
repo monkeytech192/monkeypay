@@ -39,7 +39,7 @@ class MonkeyPay_Webhook {
     public function handle_webhook( $request ) {
         $body      = $request->get_body();
         $signature = $request->get_header( 'X-MonkeyPay-Signature' );
-        $secret    = get_option( 'monkeypay_webhook_secret', '' );
+        $secret    = MonkeyPay_Settings::get( 'webhook_secret' );
 
         // Verify signature
         if ( ! empty( $secret ) ) {
@@ -120,8 +120,23 @@ class MonkeyPay_Webhook {
             'bank_name'    => $bank_name,
             'account_no'   => $account_no,
             'matched_at'   => $tx_date,
-            'tx_id'        => isset( $data['bdsd_id'] ) ? 'BDSD-' . $data['bdsd_id'] : '',
+            'tx_id'        => '',
+            'bdsd_id'      => isset( $data['bdsd_id'] ) ? 'BDSD-' . $data['bdsd_id'] : '',
         ];
+
+        // Persist BDSD transaction to local DB for history display
+        MonkeyPay_DB::insert_transaction( [
+            'bdsd_id'          => $data['bdsd_id'] ?? '',
+            'tx_id'            => $dispatch_data['bdsd_id'],
+            'amount'           => $amount,
+            'description'      => $description,
+            'bank_name'        => $bank_name,
+            'account_no'       => $account_no,
+            'is_credit'        => $is_credit,
+            'transaction_date' => $data['transaction_date'] ?? current_time( 'mysql' ),
+            'source'           => 'bdsd_webhook',
+            'status'           => 'raw',
+        ] );
 
         // Dispatch to connections: payment_received (credit) or payment_sent (debit)
         $event = $is_credit ? 'payment_received' : 'payment_sent';
@@ -155,6 +170,14 @@ class MonkeyPay_Webhook {
         $amount       = isset( $data['amount'] ) ? floatval( $data['amount'] ) : 0;
         $payment_note = isset( $data['payment_note'] ) ? sanitize_text_field( $data['payment_note'] ) : '';
 
+        // Update transaction status in local DB
+        MonkeyPay_DB::update_status( $tx_id, 'confirmed', [
+            'confirmed_at'  => current_time( 'mysql' ),
+            'matched_tx_id' => isset( $data['matched_transaction']['bdsd_id'] )
+                ? sanitize_text_field( $data['matched_transaction']['bdsd_id'] )
+                : '',
+        ] );
+
         /**
          * Fires when a payment is confirmed via webhook.
          *
@@ -184,8 +207,8 @@ class MonkeyPay_Webhook {
      */
     private function handle_session_expired( $data ) {
         // Store notification for admin
-        update_option( 'monkeypay_session_status', 'expired' );
-        update_option( 'monkeypay_session_expired_at', current_time( 'mysql' ) );
+        MonkeyPay_Settings::set( 'session_status', 'expired' );
+        MonkeyPay_Settings::set( 'session_expired_at', current_time( 'mysql' ) );
 
         /**
          * Fires when the MB Bank session expires.

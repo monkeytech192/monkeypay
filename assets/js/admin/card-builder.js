@@ -39,10 +39,11 @@
             { type: 'fields', fields: [
                 { label: 'Ngân hàng', value: '{bank_name}' },
                 { label: 'Số TK', value: '{account_no}' },
-                { label: 'Nội dung CK', value: '{payment_note}' },
+                { label: 'TX', value: '{tx_id}' },
+                { label: 'BDSD', value: '{bdsd_id}' },
                 { label: 'Thời gian', value: '{matched_at}' },
             ]},
-            { type: 'note', content: 'TX: {tx_id}' },
+            { type: 'note', content: 'Nội dung CK: {payment_note}' },
         ]
     };
 
@@ -56,7 +57,8 @@
         '{time}': '19/03/2026 18:30', '{status}': 'Thành công',
         '{payment_note}': 'MPCEZZIP', '{account_no}': '0123456789',
         '{bank_description}': 'MPCEZZIP Chuyen tien', '{site_name}': 'MonkeySalon',
-        '{matched_at}': '19/03/2026 18:30'
+        '{matched_at}': '19/03/2026 18:30',
+        '{tx_id}': 'tx_abc123', '{bdsd_id}': 'BDSD-114'
     };
 
     let canvasItems = []; // [{id, type, ...config}]

@@ -5,6 +5,50 @@ All notable changes to MonkeyPay will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.0] - 2025-03-23
+
+### Added
+- **Custom Database Schema (v3.0)**: 7 dedicated custom tables replacing legacy `wp_options` storage
+  - `monkeypay_transactions` — unified transaction history (BDSD + payment matched)
+  - `monkeypay_settings` — centralized settings with schema validation & typed defaults
+  - `monkeypay_connections` — webhook connections with platform metadata
+  - `monkeypay_gateways` — local cache of payment gateways synced from server
+  - `monkeypay_merchant_profile` — merchant info and plan details
+  - `monkeypay_integrations` — extensible integration configurations
+  - `monkeypay_api_keys` — API key management with SHA-256 hashing
+- **Centralized Settings Engine** (`MonkeyPay_Settings`): Typed setting schema with sanitize callbacks, in-memory request caching, and automatic `wp_options` → custom table migration
+- **Server Sync Engine** (`MonkeyPay_Sync`): 2-way synchronization with MonkeyPay Server
+  - Lazy sync on admin page load (max once per 5 min TTL)
+  - Manual "Sync Now" admin trigger
+  - Write-through pattern: gateway save → server + local DB simultaneously
+  - Merchant profile sync with plan/quota info
+- **BDSD Transactions REST API** (`class-rest-bdsd.php`): Local BDSD transaction query endpoints
+  - `GET /bdsd-transactions` — date-range filtered BDSD transaction listing
+  - `POST /reconcile` — batch reconciliation matching bank transactions with invoices
+- **Transaction Reconciliation**: Automated matching of bank BDSD entries against pending payment records
+- **Database Migration System**: Automatic `wp_options` → custom tables migration with rollback safety
+
+### Changed
+- **Settings Architecture**: Migrated from scattered `wp_options` calls to `MonkeyPay_Settings::get()`/`set()` across all modules
+- **Gateway Write-Through Caching**: Gateway CRUD now writes to server and local cache atomically — eliminates stale cache scenarios
+- **REST Settings Endpoint**: Refactored to use centralized `MonkeyPay_Settings` instead of direct `update_option()` calls
+- **API Keys Storage**: Moved from serialized `wp_options` array to dedicated `monkeypay_api_keys` table with proper indexing
+- **Transactions Page**: Enhanced with BDSD ID column, reconciliation status, and type classification
+- **Plugin Entry Point**: Added `is_monkeypay_mode()` helper function for integration detection
+- **Version Constant**: Synchronized `MONKEYPAY_VERSION` with plugin header (was `3.3.0`, now `3.4.0`)
+
+### Fixed
+- Version mismatch between plugin header (`3.3.1`) and `MONKEYPAY_VERSION` constant (`3.3.0`)
+- Gateway sync timing issues when server response was slow
+- Settings not persisting correctly when saved from different admin pages
+
+### Security
+- Settings now enforce typed sanitization via schema-defined callbacks
+- API keys isolated in dedicated table with proper access control
+- Clean uninstall drops all 7 custom tables — no orphaned data
+
+---
+
 ## [3.3.1] - 2025-03-21
 
 ### Added

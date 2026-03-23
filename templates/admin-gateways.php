@@ -13,9 +13,9 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-$api_url = get_option('monkeypay_api_url', MONKEYPAY_API_URL);
+$api_url = MonkeyPay_Settings::get('api_url', MONKEYPAY_API_URL);
 $api_url = ! empty( $api_url ) ? $api_url : MONKEYPAY_API_URL;
-$api_key = get_option('monkeypay_api_key', '');
+$api_key = MonkeyPay_Settings::get('api_key', '');
 
 // Available bank definitions (extend as needed)
 $available_banks = [
@@ -105,6 +105,61 @@ $available_banks = [
                         <input type="text" name="account_name" placeholder="<?php esc_attr_e('Ví dụ: HO LE MINH TUAN', 'monkeypay'); ?>" style="text-transform:uppercase;" />
                     </div>
 
+                    <!-- Gateway Config Fields -->
+                    <div style="border-top: 1px solid var(--mp-border, #e5e7eb); margin-top: 16px; padding-top: 16px;">
+                        <h4 style="margin: 0 0 12px; font-size: 13px; font-weight: 600; color: var(--mp-text-secondary, #6b7280); text-transform: uppercase; letter-spacing: 0.5px;">
+                            <?php esc_html_e('Cấu hình thanh toán', 'monkeypay'); ?>
+                        </h4>
+
+                        <!-- Auto Amount Toggle (switch style) -->
+                        <div class="monkeypay-toggle">
+                            <div class="monkeypay-toggle__info" style="flex:1;">
+                                <span class="monkeypay-toggle__label"><?php esc_html_e('Fill tiền tự động', 'monkeypay'); ?></span>
+                                <span class="monkeypay-toggle__desc"><?php esc_html_e('Bật: QR có sẵn số tiền, khớp ghi chú + số tiền. Tắt: khách tự nhập, chỉ khớp ghi chú.', 'monkeypay'); ?></span>
+                            </div>
+                            <label class="monkeypay-switch">
+                                <input type="checkbox" name="auto_amount" value="1" checked />
+                                <span class="monkeypay-switch__slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- Note Prefix -->
+                        <div class="monkeypay-field" style="margin-top:12px;">
+                            <label><?php esc_html_e('Prefix ghi chú', 'monkeypay'); ?></label>
+                            <input type="text" name="note_prefix" value="MP" maxlength="20" placeholder="MP" style="text-transform:uppercase;" />
+                            <small style="color:var(--mp-text-secondary, #6b7280);font-size:12px;"><?php esc_html_e('Ký tự đầu nội dung chuyển khoản. VD: MKT, MP, SHOP...', 'monkeypay'); ?></small>
+                        </div>
+
+                        <!-- Note Syntax (expanded variables) -->
+                        <div class="monkeypay-field" style="margin-top:12px;">
+                            <label><?php esc_html_e('Cú pháp ghi chú', 'monkeypay'); ?></label>
+                            <input type="text" name="note_syntax" value="{prefix}{random:6}" placeholder="{prefix}{random:6}" />
+                            <div style="margin-top:8px;padding:10px 12px;background:var(--mp-bg, #f8fafc);border:1px solid var(--mp-border-light, #f1f5f9);border-radius:8px;font-size:12px;line-height:1.8;">
+                                <div style="font-weight:600;color:var(--mp-text, #1a1a2e);margin-bottom:4px;"><?php esc_html_e('Biến hỗ trợ:', 'monkeypay'); ?></div>
+                                <div style="color:var(--mp-text-secondary, #6b7280);">
+                                    <code style="background:rgba(6,182,212,.08);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--mp-primary);">{prefix}</code> — <?php esc_html_e('Prefix bên trên', 'monkeypay'); ?><br>
+                                    <code style="background:rgba(6,182,212,.08);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--mp-primary);">{random:N}</code> — <?php esc_html_e('N ký tự ngẫu nhiên (chữ + số)', 'monkeypay'); ?><br>
+                                    <code style="background:rgba(6,182,212,.08);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--mp-primary);">{invoice_id}</code> — <?php esc_html_e('Mã hóa đơn từ hệ thống', 'monkeypay'); ?><br>
+                                    <code style="background:rgba(6,182,212,.08);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--mp-primary);">{date}</code> — <?php esc_html_e('Ngày hiện tại (ddmmyy)', 'monkeypay'); ?><br>
+                                    <code style="background:rgba(6,182,212,.08);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--mp-primary);">{timestamp}</code> — <?php esc_html_e('Unix timestamp', 'monkeypay'); ?><br>
+                                    <code style="background:rgba(6,182,212,.08);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--mp-primary);">{customer}</code> — <?php esc_html_e('Tên khách (bỏ dấu)', 'monkeypay'); ?><br>
+                                    <code style="background:rgba(6,182,212,.08);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--mp-primary);">{amount}</code> — <?php esc_html_e('Số tiền giao dịch', 'monkeypay'); ?>
+                                </div>
+                                <div style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--mp-border-light, #e2e8f0);font-family:monospace;color:var(--mp-text, #1a1a2e);">
+                                    <span style="color:var(--mp-text-muted, #94a3b8);font-family:inherit;">VD:</span>
+                                    <code>{prefix}{random:6}</code> → <strong>MKT1A2B3C</strong> &nbsp;|&nbsp;
+                                    <code>{prefix}{invoice_id}</code> → <strong>MKTINV001</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Polling Interval -->
+                        <div class="monkeypay-field" style="margin-top:12px;">
+                            <label><?php esc_html_e('Thời gian poll (giây)', 'monkeypay'); ?></label>
+                            <input type="number" name="polling_interval" value="5" min="3" max="30" step="1" />
+                            <small style="color:var(--mp-text-secondary, #6b7280);font-size:12px;"><?php esc_html_e('Kiểm tra thanh toán mỗi N giây. Mặc định: 5', 'monkeypay'); ?></small>
+                        </div>
+                    </div>
                     <div class="monkeypay-gateway-form-actions">
                         <button type="button" class="monkeypay-btn monkeypay-btn--primary monkeypay-gateway-save-btn">
                             <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>

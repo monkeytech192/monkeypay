@@ -142,6 +142,7 @@ defined( 'ABSPATH' ) || exit;
                     <th class="mptx-col-type" data-col="type">Loại</th>
                     <th class="mptx-col-balance" data-col="balance">Số dư</th>
                     <th class="mptx-col-ref" data-col="ref">Mã tham chiếu</th>
+                    <th class="mptx-col-reconcile" data-col="reconcile">Đối soát</th>
                 </tr>
             </thead>
             <tbody id="mptx-tbody"></tbody>

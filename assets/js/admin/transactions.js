@@ -30,7 +30,9 @@
             type: true,
             balance: true,
             ref: true,
+            reconcile: true,
         },
+        reconcileMap: {},   // index → reconcile result
     };
 
     const COL_LABELS = {
@@ -40,6 +42,7 @@
         type: 'Loại',
         balance: 'Số dư',
         ref: 'Mã tham chiếu',
+        reconcile: 'Đối soát',
     };
 
     /* ── DOM cache ────────────────────────────────────── */
@@ -158,21 +161,56 @@
         const from = toApiDate(dateFrom);
         const to   = toApiDate(dateTo);
         const qs   = from && to ? '?from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to) : '';
-        const url  = monkeypayAdmin.restUrl + 'bank/history' + qs;
 
-        return $.ajax({
-            url,
-            headers: { 'X-WP-Nonce': monkeypayAdmin.nonce },
-            dataType: 'json',
-        })
-        .done(function (res) {
-            if (res && res.success && res.data) {
-                const rawTxs = res.data.transactions || [];
-                // Normalize API fields to internal format
-                const txList = rawTxs.map(normalizeTx);
+        const bankUrl = monkeypayAdmin.restUrl + 'bank/history' + qs;
+        const bdsdUrl = monkeypayAdmin.restUrl + 'bdsd-transactions' + qs;
+
+        // Fetch bank history and BDSD data in parallel
+        return $.when(
+            $.ajax({
+                url: bankUrl,
+                headers: { 'X-WP-Nonce': monkeypayAdmin.nonce },
+                dataType: 'json',
+            }),
+            $.ajax({
+                url: bdsdUrl,
+                headers: { 'X-WP-Nonce': monkeypayAdmin.nonce },
+                dataType: 'json',
+            }).catch(function () {
+                // BDSD endpoint may not exist yet (pre-migration) — graceful fallback
+                return [{ success: true, data: { transactions: [] } }];
+            })
+        )
+        .done(function (bankResp, bdsdResp) {
+            // $.when wraps each response in [data, textStatus, jqXHR]
+            const bankData = Array.isArray(bankResp) ? bankResp[0] : bankResp;
+            const bdsdData = Array.isArray(bdsdResp) ? bdsdResp[0] : bdsdResp;
+
+            if (bankData && bankData.success && bankData.data) {
+                const rawTxs = bankData.data.transactions || [];
+                const bdsdTxs = (bdsdData && bdsdData.success && bdsdData.data)
+                    ? (bdsdData.data.transactions || [])
+                    : [];
+
+                // Normalize bank transactions and merge BDSD IDs
+                const txList = rawTxs.map(function (tx) {
+                    const normalized = normalizeTx(tx);
+                    // Try to match with BDSD record by amount + description similarity
+                    const matched = findBdsdMatch(normalized, bdsdTxs);
+                    if (matched) {
+                        normalized.reference_number = matched.tx_id || normalized.reference_number;
+                        normalized.bdsd_id = matched.bdsd_id || '';
+                    }
+                    return normalized;
+                });
+
                 STATE.allData = txList;
                 updateSummary(txList);
-                applyClientFilters();
+
+                // Batch reconcile with checkin invoices
+                fetchReconcile(txList).then(function () {
+                    applyClientFilters();
+                });
             } else {
                 STATE.allData = [];
                 STATE.data = [];
@@ -184,6 +222,119 @@
             STATE.data = [];
             showEmpty();
         });
+    }
+
+    /**
+     * Find matching BDSD transaction for a bank transaction.
+     * Matches by: amount (exact) + description (substring match) + close timestamp.
+     *
+     * @param {Object} bankTx Normalized bank transaction
+     * @param {Array}  bdsdTxs BDSD transaction records
+     * @return {Object|null} Matched BDSD record or null
+     */
+    function findBdsdMatch(bankTx, bdsdTxs) {
+        if (!bdsdTxs || !bdsdTxs.length) return null;
+
+        const bankAmt  = Math.abs(parseFloat(bankTx.amount) || 0);
+        const bankDesc = (bankTx.description || '').toLowerCase().trim();
+        const bankTime = bankTx.transaction_date ? new Date(bankTx.transaction_date).getTime() : 0;
+
+        for (let i = 0; i < bdsdTxs.length; i++) {
+            const bdsd = bdsdTxs[i];
+            const bdsdAmt  = Math.abs(parseFloat(bdsd.amount) || 0);
+            const bdsdDesc = (bdsd.description || '').toLowerCase().trim();
+            const bdsdTime = bdsd.transaction_date ? new Date(bdsd.transaction_date).getTime() : 0;
+
+            // Amount must match exactly
+            if (bankAmt !== bdsdAmt) continue;
+
+            // Description must have significant overlap (substring match)
+            const descMatch = bankDesc && bdsdDesc && (
+                bankDesc.includes(bdsdDesc) || bdsdDesc.includes(bankDesc)
+            );
+
+            // Time within 5 minutes tolerance
+            const timeClose = bankTime && bdsdTime
+                ? Math.abs(bankTime - bdsdTime) < 5 * 60 * 1000
+                : true; // If no time data, don't filter by time
+
+            if (descMatch && timeClose) {
+                // Remove from array to prevent double-matching
+                bdsdTxs.splice(i, 1);
+                return bdsd;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Batch reconcile: send descriptions+amounts to backend,
+     * receive match status for each transaction.
+     */
+    function fetchReconcile(txList) {
+        // Only reconcile credit (incoming) transactions
+        const payload = txList.map(function (tx) {
+            return {
+                description: tx.description || '',
+                amount: tx.amount || 0,
+            };
+        });
+
+        return $.ajax({
+            url: monkeypayAdmin.restUrl + 'reconcile',
+            method: 'POST',
+            headers: { 'X-WP-Nonce': monkeypayAdmin.nonce },
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            dataType: 'json',
+        }).then(function (resp) {
+            if (resp && resp.success && resp.data) {
+                STATE.reconcileMap = {};
+                resp.data.forEach(function (r, i) {
+                    STATE.reconcileMap[i] = r;
+                });
+            }
+        }).catch(function () {
+            // Graceful fallback if endpoint not available
+            STATE.reconcileMap = {};
+        });
+    }
+
+    /**
+     * Render reconcile badge HTML.
+     */
+    function renderReconcileBadge(globalIdx) {
+        const r = STATE.reconcileMap[globalIdx];
+        if (!r || r.status === 'na') {
+            return '<span class="mptx-reconcile-badge mptx-reconcile--na">—</span>';
+        }
+        if (r.status === 'matched') {
+            return '<span class="mptx-reconcile-badge mptx-reconcile--matched" title="' + escHtml(r.invoice_id) + ' • Đã thanh toán">✓ Đã khớp</span>';
+        }
+        if (r.status === 'amount_ok') {
+            return '<span class="mptx-reconcile-badge mptx-reconcile--pending" title="' + escHtml(r.invoice_id) + ' • Chờ xác nhận">' + escHtml(r.invoice_id) + '</span>';
+        }
+        if (r.status === 'mismatch') {
+            return '<span class="mptx-reconcile-badge mptx-reconcile--mismatch" title="Số tiền không khớp: HĐ ' + (r.expected || 0).toLocaleString('vi-VN') + '₫ / Bank ' + (r.actual || 0).toLocaleString('vi-VN') + '₫">⚠ Sai tiền</span>';
+        }
+        if (r.status === 'not_found') {
+            return '<span class="mptx-reconcile-badge mptx-reconcile--notfound" title="Mã ' + escHtml(r.invoice_id) + ' không tìm thấy trong hệ thống">✗ Không tìm thấy</span>';
+        }
+        return '<span class="mptx-reconcile-badge mptx-reconcile--na">—</span>';
+    }
+
+    /**
+     * Render BDSD ID with tooltip explaining ID gaps.
+     */
+    function renderBdsdRef(tx) {
+        const ref = tx.reference_number || tx.ref || '—';
+        const bdsdId = tx.bdsd_id || '';
+
+        if (bdsdId) {
+            return '<span class="mptx-ref mptx-bdsd-ref" title="BDSD ID được gán tự tăng trên Cloud Run, dùng chung cho nhiều tài khoản. Nhảy số là bình thường.">' + escHtml(bdsdId) + '</span>';
+        }
+        return '<span class="mptx-ref">' + escHtml(ref) + '</span>';
     }
 
     /**
@@ -208,7 +359,7 @@
             description: tx.transactionDesc || tx.description || '',
             transaction_date: tx.transactionDate || tx.postDate || '',
             balance: tx.balanceAvailable != null ? tx.balanceAvailable : (tx.balance || 0),
-            reference_number: tx.reference || tx.reference_number || tx.ref || '',
+            reference_number: tx.refNo || tx.reference || tx.reference_number || tx.ref || '',
         };
     }
 
@@ -356,22 +507,28 @@
             $(this).toggle(!!STATE.columns[col]);
         });
 
+        // Calculate global start index for reconcile map lookup
+        const globalStart = (STATE.page - 1) * STATE.perPage;
+
         let html = '';
-        STATE.data.forEach(tx => {
+        STATE.data.forEach((tx, localIdx) => {
             const amt    = parseFloat(tx.amount) || 0;
             const isIn   = amt > 0;
             const desc   = tx.description || tx.content || '—';
             const time   = formatTime(tx.transaction_date || tx.created_at || tx.date);
-            const ref    = tx.reference_number || tx.ref || '—';
             const bal    = parseFloat(tx.balance) || 0;
 
+            // Find global index in allData for reconcile lookup
+            const globalIdx = STATE.allData.indexOf(tx);
+
             html += '<tr>';
-            if (STATE.columns.time)    html += `<td class="mptx-col-time">${time}</td>`;
-            if (STATE.columns.desc)    html += `<td class="mptx-col-desc">${escHtml(desc)}</td>`;
-            if (STATE.columns.amount)  html += `<td class="mptx-col-amount ${isIn ? 'mptx-amount--in' : 'mptx-amount--out'}">${isIn ? '+' : ''}${formatMoney(amt)}</td>`;
-            if (STATE.columns.type)    html += `<td class="mptx-col-type"><span class="mptx-type-badge mptx-type-badge--${isIn ? 'in' : 'out'}">${isIn ? 'Vào' : 'Ra'}</span></td>`;
-            if (STATE.columns.balance) html += `<td class="mptx-col-balance">${formatMoney(bal)}</td>`;
-            if (STATE.columns.ref)     html += `<td class="mptx-col-ref"><span class="mptx-ref">${escHtml(ref)}</span></td>`;
+            if (STATE.columns.time)      html += `<td class="mptx-col-time">${time}</td>`;
+            if (STATE.columns.desc)      html += `<td class="mptx-col-desc">${escHtml(desc)}</td>`;
+            if (STATE.columns.amount)    html += `<td class="mptx-col-amount ${isIn ? 'mptx-amount--in' : 'mptx-amount--out'}">${isIn ? '+' : ''}${formatMoney(amt)}</td>`;
+            if (STATE.columns.type)      html += `<td class="mptx-col-type"><span class="mptx-type-badge mptx-type-badge--${isIn ? 'in' : 'out'}">${isIn ? 'Vào' : 'Ra'}</span></td>`;
+            if (STATE.columns.balance)   html += `<td class="mptx-col-balance">${formatMoney(bal)}</td>`;
+            if (STATE.columns.ref)       html += `<td class="mptx-col-ref">${renderBdsdRef(tx)}</td>`;
+            if (STATE.columns.reconcile) html += `<td class="mptx-col-reconcile">${renderReconcileBadge(globalIdx)}</td>`;
             html += '</tr>';
         });
 
@@ -392,6 +549,10 @@
                 ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="6" x2="12" y2="18"/></svg>'
                 : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 13 12 18 17 13"/><line x1="12" y1="18" x2="12" y2="6"/></svg>';
 
+            const globalIdx = STATE.allData.indexOf(tx);
+            const reconcileHtml = renderReconcileBadge(globalIdx);
+            const bdsdHtml = tx.bdsd_id ? `<span class="mptx-mobile-card__bdsd">${escHtml(tx.bdsd_id)}</span>` : '';
+
             html += `
                 <div class="mptx-mobile-card">
                     <div class="mptx-mobile-card__icon mptx-mobile-card__icon--${isIn ? 'in' : 'out'}">
@@ -399,11 +560,12 @@
                     </div>
                     <div class="mptx-mobile-card__body">
                         <div class="mptx-mobile-card__desc">${escHtml(desc)}</div>
-                        <div class="mptx-mobile-card__meta">${time}</div>
+                        <div class="mptx-mobile-card__meta">${time} ${bdsdHtml}</div>
                     </div>
                     <div class="mptx-mobile-card__amount">
                         <div class="mptx-mobile-card__value ${isIn ? 'mptx-amount--in' : 'mptx-amount--out'}">${isIn ? '+' : ''}${formatMoney(amt)}</div>
                         <div class="mptx-mobile-card__balance">Dư: ${formatMoney(bal)}</div>
+                        <div class="mptx-mobile-card__reconcile">${reconcileHtml}</div>
                     </div>
                 </div>`;
         });
@@ -469,16 +631,25 @@
     function exportCSV() {
         if (!STATE.allData.length) return;
 
-        const headers = ['Thời gian', 'Mô tả', 'Số tiền', 'Loại', 'Số dư', 'Mã tham chiếu'];
-        const rows = STATE.allData.map(tx => {
+        const headers = ['Thời gian', 'Mô tả', 'Số tiền', 'Loại', 'Số dư', 'Mã tham chiếu', 'Đối soát'];
+        const rows = STATE.allData.map((tx, i) => {
             const amt = parseFloat(tx.amount) || 0;
+            const r = STATE.reconcileMap[i];
+            let reconcileText = '—';
+            if (r) {
+                if (r.status === 'matched') reconcileText = 'Đã khớp (' + (r.invoice_id || '') + ')';
+                else if (r.status === 'amount_ok') reconcileText = r.invoice_id || 'Chờ xác nhận';
+                else if (r.status === 'mismatch') reconcileText = 'Sai tiền';
+                else if (r.status === 'not_found') reconcileText = 'Không tìm thấy';
+            }
             return [
                 tx.transaction_date || tx.created_at || tx.date || '',
                 (tx.description || tx.content || '').replace(/"/g, '""'),
                 amt,
                 amt > 0 ? 'Vào' : 'Ra',
                 tx.balance || 0,
-                tx.reference_number || tx.ref || '',
+                tx.bdsd_id || tx.reference_number || tx.ref || '',
+                reconcileText,
             ];
         });
 

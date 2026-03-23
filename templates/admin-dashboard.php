@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $webhook_url = rest_url( 'monkeypay/v1/webhook' );
-$api_key     = get_option( 'monkeypay_api_key', '' );
+$api_key     = MonkeyPay_Settings::get( 'api_key', '' );
 
 // Connection data for JS — use singleton to read correct option key
 $conn_manager     = MonkeyPay_Connections::get_instance();
@@ -159,8 +159,8 @@ window.mpConnections  = <?php echo wp_json_encode( $connections_list ); ?>;
 
         <!-- Quick Display Settings (toggles, auto-save on click) -->
         <?php
-            $qs_dark = get_option( 'monkeypay_dark_mode', 'light' );
-            $qs_lang = get_option( 'monkeypay_language', 'vi' );
+            $qs_dark = MonkeyPay_Settings::get( 'dark_mode', 'light' );
+            $qs_lang = MonkeyPay_Settings::get( 'language', 'vi' );
         ?>
         <div class="mp-quick-display">
             <h4 class="mp-quick-display__title" data-i18n="quick_display">Giao diện</h4>
@@ -378,6 +378,7 @@ window.mpConnections  = <?php echo wp_json_encode( $connections_list ); ?>;
                     <div class="mp-tx-skeleton__cell mp-skeleton mp-tx-skeleton__cell--sm"></div>
                 </div>
                 <?php endfor; ?>
+            </div>
 
             <!-- Empty -->
             <div id="mp-tx-empty" class="mp-tx-empty" style="display:none">

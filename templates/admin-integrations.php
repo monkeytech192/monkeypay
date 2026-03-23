@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $has_woo      = class_exists( 'WooCommerce' );
 $has_checkin   = class_exists( 'Checkin_MKT192_WP' ) || in_array( 'checkin-mkt192-wp/checkin-mkt192-wp.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true );
-$wc_enabled   = get_option( 'monkeypay_wc_enabled', '0' ) === '1';
-$checkin_on   = get_option( 'monkeypay_checkin_bridge', '0' ) === '1';
+$wc_enabled   = MonkeyPay_Settings::get( 'wc_enabled', '0' ) === '1';
+$checkin_on   = MonkeyPay_Settings::get( 'checkin_bridge', '0' ) === '1';
 
 $integrations = [
     'woocommerce' => [

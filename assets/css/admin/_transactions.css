@@ -472,6 +472,7 @@
 .mptx-col-type { min-width: 80px; }
 .mptx-col-balance { min-width: 120px; text-align: right !important; }
 .mptx-col-ref { min-width: 120px; }
+.mptx-col-reconcile { min-width: 110px; }
 
 /* Amount styling */
 .mptx-amount--in {
@@ -510,6 +511,67 @@
     font-family: 'SF Mono', Monaco, monospace;
     font-size: 11px;
     color: var(--mp-text-muted);
+}
+
+/* BDSD Ref with tooltip */
+.mptx-bdsd-ref {
+    cursor: help;
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+}
+
+/* ── Reconcile Badges ────────────────────────────── */
+.mptx-reconcile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: var(--mp-radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: default;
+}
+
+.mptx-reconcile--matched {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+}
+
+.mptx-reconcile--pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+}
+
+.mptx-reconcile--mismatch {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    cursor: help;
+}
+
+.mptx-reconcile--notfound {
+    background: rgba(148, 163, 184, 0.12);
+    color: #64748b;
+    cursor: help;
+}
+
+.mptx-reconcile--na {
+    color: var(--mp-text-muted);
+    background: none;
+    padding: 0;
+}
+
+/* Mobile card reconcile */
+.mptx-mobile-card__reconcile {
+    margin-top: 4px;
+}
+
+.mptx-mobile-card__bdsd {
+    margin-left: 6px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 10px;
+    color: var(--mp-text-muted);
+    cursor: help;
 }
 
 /* ── Mobile Cards ─────────────────────────────────── */

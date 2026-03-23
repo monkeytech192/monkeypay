@@ -337,7 +337,7 @@ class MonkeyPay_REST_Auth {
      * @return string
      */
     private static function get_api_url() {
-        $url = get_option( 'monkeypay_api_url', MONKEYPAY_API_URL );
+        $url = MonkeyPay_Settings::get( 'api_url', MONKEYPAY_API_URL );
         return rtrim( ! empty( $url ) ? $url : MONKEYPAY_API_URL, '/' );
     }
 
@@ -349,15 +349,15 @@ class MonkeyPay_REST_Auth {
      */
     private static function save_merchant_credentials( $merchant, $provider = 'password' ) {
         if ( ! empty( $merchant['api_key'] ) ) {
-            update_option( 'monkeypay_api_key', $merchant['api_key'] );
+            MonkeyPay_Settings::set( 'api_key', $merchant['api_key'] );
         }
         if ( ! empty( $merchant['webhook_secret'] ) ) {
-            update_option( 'monkeypay_webhook_secret', $merchant['webhook_secret'] );
+            MonkeyPay_Settings::set( 'webhook_secret', $merchant['webhook_secret'] );
         }
         if ( ! empty( $merchant['admin_secret'] ) ) {
-            update_option( 'monkeypay_admin_secret', $merchant['admin_secret'] );
+            MonkeyPay_Settings::set( 'admin_secret', $merchant['admin_secret'] );
         }
-        update_option( 'monkeypay_auth_provider', sanitize_text_field( $provider ) );
+        MonkeyPay_Settings::set( 'auth_provider', $provider );
     }
 
     /**
@@ -702,11 +702,11 @@ class MonkeyPay_REST_Auth {
         }
 
         // ── Check if this WP site already has a linked merchant ──
-        $existing_key = get_option( 'monkeypay_api_key', '' );
+        $existing_key = MonkeyPay_Settings::get( 'api_key' );
 
         if ( ! empty( $existing_key ) ) {
             // Already linked — save auth_provider and go to dashboard
-            update_option( 'monkeypay_auth_provider', 'google' );
+            MonkeyPay_Settings::set( 'auth_provider', 'google' );
 
             return new WP_REST_Response( [
                 'success'        => true,
@@ -777,7 +777,7 @@ class MonkeyPay_REST_Auth {
      * Set password for Google-authenticated users who don't have one yet.
      */
     public static function set_password( $request ) {
-        $api_key = get_option( 'monkeypay_api_key', '' );
+        $api_key = MonkeyPay_Settings::get( 'api_key' );
 
         if ( empty( $api_key ) ) {
             return new WP_REST_Response( [
@@ -826,7 +826,7 @@ class MonkeyPay_REST_Auth {
         }
 
         // Update provider to password since they now have a password
-        update_option( 'monkeypay_auth_provider', 'google_password' );
+        MonkeyPay_Settings::set( 'auth_provider', 'google_password' );
 
         return new WP_REST_Response( [
             'success' => true,
@@ -842,7 +842,7 @@ class MonkeyPay_REST_Auth {
      * 2FA Setup — request TOTP secret + QR from backend.
      */
     public static function twofa_setup( $request ) {
-        $api_key = get_option( 'monkeypay_api_key', '' );
+        $api_key = MonkeyPay_Settings::get( 'api_key' );
 
         if ( empty( $api_key ) ) {
             return new WP_REST_Response( [
@@ -905,7 +905,7 @@ class MonkeyPay_REST_Auth {
         $otp_code   = $request->get_param( 'otp_code' );
         $temp_token = $request->get_param( 'temp_token' );
         $email      = $request->get_param( 'email' );
-        $api_key    = get_option( 'monkeypay_api_key', '' );
+        $api_key    = MonkeyPay_Settings::get( 'api_key' );
 
         $headers = [ 'Content-Type' => 'application/json' ];
         $body    = [ 'otp_code' => $otp_code ];
@@ -967,7 +967,7 @@ class MonkeyPay_REST_Auth {
      * 2FA Disable — disable TOTP for current merchant.
      */
     public static function twofa_disable( $request ) {
-        $api_key = get_option( 'monkeypay_api_key', '' );
+        $api_key = MonkeyPay_Settings::get( 'api_key' );
 
         if ( empty( $api_key ) ) {
             return new WP_REST_Response( [
@@ -1017,7 +1017,7 @@ class MonkeyPay_REST_Auth {
      * 2FA Status — check if 2FA is enabled for current merchant.
      */
     public static function twofa_status() {
-        $api_key = get_option( 'monkeypay_api_key', '' );
+        $api_key = MonkeyPay_Settings::get( 'api_key' );
 
         if ( empty( $api_key ) ) {
             return new WP_REST_Response( [
@@ -1081,7 +1081,7 @@ class MonkeyPay_REST_Auth {
      * Get merchant usage stats.
      */
     public static function merchant_usage() {
-        $api_key = get_option( 'monkeypay_api_key', '' );
+        $api_key = MonkeyPay_Settings::get( 'api_key' );
 
         if ( empty( $api_key ) ) {
             return new WP_REST_Response( [
@@ -1119,7 +1119,7 @@ class MonkeyPay_REST_Auth {
             $data['merchant'] = [];
         }
         $data['merchant']['api_key']       = $api_key;
-        $data['merchant']['auth_provider'] = get_option( 'monkeypay_auth_provider', 'password' );
+        $data['merchant']['auth_provider'] = MonkeyPay_Settings::get( 'auth_provider' );
 
         return new WP_REST_Response( [
             'success' => true,

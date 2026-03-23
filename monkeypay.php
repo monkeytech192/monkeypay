@@ -4,7 +4,7 @@
  * Plugin Name: MonkeyPay - Cổng Thanh Toán Tự Động
  * Plugin URI:  https://monkeytech192.vn/monkeypay
  * Description: Cổng thanh toán chuyển khoản ngân hàng tự động. Tích hợp MB Bank, WooCommerce, và hệ sinh thái Monkey.
- * Version:     3.3.1
+ * Version:     3.4.0
  * Author:      Monkey Tech 192
  * Author URI:  https://monkeytech192.vn/
  * Text Domain: monkeypay
@@ -23,7 +23,7 @@ if (! defined('ABSPATH')) {
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 
-define('MONKEYPAY_VERSION', '3.3.0');
+define('MONKEYPAY_VERSION', '3.4.0');
 define('MONKEYPAY_PLUGIN_FILE', __FILE__);
 define('MONKEYPAY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MONKEYPAY_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -45,6 +45,18 @@ require_once MONKEYPAY_PLUGIN_DIR . 'includes/class-monkeypay.php';
 function monkeypay()
 {
     return MonkeyPay::get_instance();
+}
+
+/**
+ * Check if MonkeyPay is active and configured.
+ * Used by Checkin plugin to enable reconciliation features.
+ *
+ * @return bool
+ */
+function is_monkeypay_mode()
+{
+    // MonkeyPay is active if this file is loaded
+    return true;
 }
 
 // Initialize

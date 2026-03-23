@@ -111,8 +111,15 @@ class MonkeyPay_WooCommerce_Gateway extends WC_Payment_Gateway {
         $order->update_meta_data( '_monkeypay_expires_at', $result['expires_at'] );
         $order->save();
 
-        // Store reverse mapping: tx_id → order_id
-        update_option( 'monkeypay_wc_tx_' . $result['tx_id'], $order_id );
+        // Store reverse mapping: tx_id → order_id (in transactions table)
+        MonkeyPay_DB::insert_payment( [
+            'tx_id'          => $result['tx_id'],
+            'amount'         => $order->get_total(),
+            'payment_note'   => $result['payment_note'],
+            'reference_type' => 'wc_order',
+            'reference_id'   => (string) $order_id,
+            'source'         => 'payment_create',
+        ] );
 
         // Set order status to pending
         $order->update_status( 'on-hold', __( 'Đang chờ chuyển khoản qua MonkeyPay.', 'monkeypay' ) );
@@ -168,12 +175,14 @@ class MonkeyPay_WooCommerce_Gateway extends WC_Payment_Gateway {
      * @param array  $data
      */
     public function handle_payment_confirmed( $tx_id, $data ) {
-        $order_id = get_option( 'monkeypay_wc_tx_' . $tx_id, '' );
-        if ( empty( $order_id ) ) {
+        // Look up the WC order mapped to this tx_id from transactions table
+        $tx_row = MonkeyPay_DB::find_by_tx_id( $tx_id );
+        if ( ! $tx_row || $tx_row['reference_type'] !== 'wc_order' || empty( $tx_row['reference_id'] ) ) {
             return; // Not a WooCommerce transaction
         }
 
-        $order = wc_get_order( $order_id );
+        $order_id = $tx_row['reference_id'];
+        $order    = wc_get_order( $order_id );
         if ( ! $order ) {
             return;
         }
@@ -187,8 +196,10 @@ class MonkeyPay_WooCommerce_Gateway extends WC_Payment_Gateway {
             )
         );
 
-        // Cleanup mapping
-        delete_option( 'monkeypay_wc_tx_' . $tx_id );
+        // Update transaction status to confirmed
+        MonkeyPay_DB::update_status( $tx_id, 'confirmed', [
+            'confirmed_at' => current_time( 'mysql' ),
+        ] );
 
         MonkeyPay_Logger::transaction( "WC Order #{$order_id} completed via tx {$tx_id}" );
     }

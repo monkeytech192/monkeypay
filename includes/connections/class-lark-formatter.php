@@ -29,7 +29,8 @@ class MonkeyPay_Lark_Formatter {
             '{account_no}'   => 'Số tài khoản',
             '{payment_note}' => 'Nội dung chuyển khoản',
             '{description}'  => 'Mô tả giao dịch',
-            '{tx_id}'        => 'Mã giao dịch nội bộ',
+            '{tx_id}'        => 'Mã giao dịch (TX)',
+            '{bdsd_id}'      => 'Mã BDSD (biến động số dư)',
             '{invoice_id}'   => 'Mã hóa đơn',
             '{matched_at}'   => 'Thời gian khớp lệnh',
             '{bank_description}' => 'Nội dung gốc từ ngân hàng',
@@ -58,13 +59,14 @@ class MonkeyPay_Lark_Formatter {
                     'fields' => [
                         [ 'label' => 'Ngân hàng',    'value' => '{bank_name}' ],
                         [ 'label' => 'Số TK',        'value' => '{account_no}' ],
-                        [ 'label' => 'Nội dung CK',  'value' => '{payment_note}' ],
+                        [ 'label' => 'TX',            'value' => '{tx_id}' ],
+                        [ 'label' => 'BDSD',          'value' => '{bdsd_id}' ],
                         [ 'label' => 'Thời gian',    'value' => '{matched_at}' ],
                     ],
                 ],
                 [
                     'type'    => 'note',
-                    'content' => 'TX: {tx_id}',
+                    'content' => 'Nội dung CK: {payment_note}',
                 ],
             ],
         ];
@@ -92,13 +94,14 @@ class MonkeyPay_Lark_Formatter {
                     'fields' => [
                         [ 'label' => 'Ngân hàng',    'value' => '{bank_name}' ],
                         [ 'label' => 'Số TK',        'value' => '{account_no}' ],
-                        [ 'label' => 'Nội dung CK',  'value' => '{payment_note}' ],
+                        [ 'label' => 'TX',            'value' => '{tx_id}' ],
+                        [ 'label' => 'BDSD',          'value' => '{bdsd_id}' ],
                         [ 'label' => 'Thời gian',    'value' => '{matched_at}' ],
                     ],
                 ],
                 [
                     'type'    => 'note',
-                    'content' => 'TX: {tx_id}',
+                    'content' => 'Nội dung CK: {payment_note}',
                 ],
             ],
         ];
@@ -165,6 +168,7 @@ class MonkeyPay_Lark_Formatter {
             '{payment_note}'     => $note,
             '{description}'      => $data['description'] ?? '',
             '{tx_id}'            => $data['tx_id'] ?? '',
+            '{bdsd_id}'          => $data['bdsd_id'] ?? '',
             '{invoice_id}'       => $data['invoice_id'] ?? '',
             '{matched_at}'       => $matched_at,
             '{bank_description}' => $data['bank_description'] ?? '',

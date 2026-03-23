@@ -20,7 +20,7 @@ class MonkeyPay_API_Client {
      * @return string
      */
     private function get_api_url() {
-        $url = get_option( 'monkeypay_api_url', MONKEYPAY_API_URL );
+        $url = MonkeyPay_Settings::get( 'api_url', MONKEYPAY_API_URL );
         return rtrim( ! empty( $url ) ? $url : MONKEYPAY_API_URL, '/' );
     }
 
@@ -30,7 +30,7 @@ class MonkeyPay_API_Client {
      * @return string
      */
     private function get_api_key() {
-        return get_option( 'monkeypay_api_key', '' );
+        return MonkeyPay_Settings::get( 'api_key' );
     }
 
     /**

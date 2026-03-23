@@ -24,7 +24,7 @@ class MonkeyPay_Admin {
      * Check if onboarding is needed (no API key configured).
      */
     private function needs_onboarding() {
-        return empty( get_option( 'monkeypay_api_key', '' ) );
+        return empty( MonkeyPay_Settings::get( 'api_key' ) );
     }
 
     /**

@@ -2,11 +2,11 @@
 /**
  * MonkeyPay REST API — Payment Gateways
  *
- * Proxies gateway management requests to the MonkeyPay Server.
- * Handles admin gateway CRUD and merchant-facing gateway listing.
+ * Admin: Proxies CRUD requests to MonkeyPay Server, then syncs local cache.
+ * Merchant: Reads from local cache (auto-synced) for fast response.
  *
  * @package MonkeyPay
- * @since   3.0.0
+ * @since   3.3.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,7 +19,7 @@ class MonkeyPay_REST_Gateways {
      * Register REST routes for gateways.
      */
     public static function register_routes() {
-        // List gateways (admin — proxied to server)
+        // List gateways (admin — proxied to server + local cache)
         register_rest_route( 'monkeypay/v1', '/gateways', [
             'methods'             => 'GET',
             'callback'            => [ __CLASS__, 'list_gateways' ],
@@ -46,6 +46,15 @@ class MonkeyPay_REST_Gateways {
             },
         ] );
 
+        // Manual sync trigger (admin)
+        register_rest_route( 'monkeypay/v1', '/gateways/sync', [
+            'methods'             => 'POST',
+            'callback'            => [ __CLASS__, 'manual_sync' ],
+            'permission_callback' => function () {
+                return current_user_can( 'manage_options' );
+            },
+        ] );
+
         // Merchant-facing: list enabled gateways (using API key)
         register_rest_route( 'monkeypay/v1', '/merchant-gateways', [
             'methods'             => 'GET',
@@ -67,46 +76,44 @@ class MonkeyPay_REST_Gateways {
      * @return string
      */
     private static function get_api_url() {
-        $url = get_option( 'monkeypay_api_url', MONKEYPAY_API_URL );
+        $url = MonkeyPay_Settings::get( 'api_url', MONKEYPAY_API_URL );
         return rtrim( ! empty( $url ) ? $url : MONKEYPAY_API_URL, '/' );
     }
 
     /**
-     * Admin proxy: list gateways for the current merchant.
+     * Admin: List gateways from local cache.
+     * Forces sync if cache is stale or if ?force_sync=1 is passed.
      */
-    public static function list_gateways() {
-        $api_key = get_option( 'monkeypay_api_key', '' );
+    public static function list_gateways( $request ) {
+        $force = $request->get_param( 'force_sync' ) === '1';
 
-        $response = wp_remote_get( self::get_api_url() . '/api/gateways', [
-            'timeout' => 15,
-            'headers' => [
-                'X-Api-Key' => $api_key,
-            ],
-        ] );
-
-        if ( is_wp_error( $response ) ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => $response->get_error_message(),
-            ], 500 );
+        // Sync from server if needed
+        if ( $force || MonkeyPay_Sync::is_cache_stale() ) {
+            MonkeyPay_Sync::sync_gateways();
         }
 
-        $data = json_decode( wp_remote_retrieve_body( $response ), true );
+        // Read from local cache
+        global $wpdb;
+        $table = MonkeyPay_DB::gateways_table();
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $gateways = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY id ASC", ARRAY_A );
 
         return new WP_REST_Response( [
-            'success' => true,
-            'data'    => $data,
+            'success'  => true,
+            'data'     => [
+                'gateways' => is_array( $gateways ) ? $gateways : [],
+            ],
         ], 200 );
     }
 
     /**
-     * Admin proxy: save a gateway.
-     * Forwards bank account info to MonkeyPay server.
+     * Admin proxy: Save a gateway to server, then sync local cache.
      */
     public static function save_gateway( $request ) {
         $params            = $request->get_json_params();
-        $params['api_key'] = get_option( 'monkeypay_api_key', '' );
-        $admin_secret      = get_option( 'monkeypay_admin_secret', '' );
+        $params['api_key'] = MonkeyPay_Settings::get( 'api_key' );
+        $admin_secret      = MonkeyPay_Settings::get( 'admin_secret' );
 
         $response = wp_remote_post( self::get_api_url() . '/api/admin/gateways', [
             'timeout' => 15,
@@ -127,6 +134,21 @@ class MonkeyPay_REST_Gateways {
         $data = json_decode( wp_remote_retrieve_body( $response ), true );
         $code = wp_remote_retrieve_response_code( $response );
 
+        // On success: sync local cache + checkin options
+        if ( $code < 400 ) {
+            // Get server-assigned ID from response
+            $server_id = isset( $data['gateway']['id'] )
+                ? $data['gateway']['id']
+                : ( isset( $data['id'] ) ? $data['id'] : null );
+
+            if ( $server_id ) {
+                MonkeyPay_Sync::cache_gateway( $server_id, $params );
+            }
+
+            // Sync gateway config to WP options for Checkin plugin integration
+            self::sync_gateway_options( $params );
+        }
+
         return new WP_REST_Response( [
             'success' => $code < 400,
             'data'    => $data,
@@ -134,11 +156,37 @@ class MonkeyPay_REST_Gateways {
     }
 
     /**
-     * Admin proxy: delete a gateway.
+     * Sync gateway config to WP options for Checkin plugin integration.
+     *
+     * @param array $params Gateway params from the save request.
+     */
+    private static function sync_gateway_options( $params ) {
+        if ( ! empty( $params['note_prefix'] ) ) {
+            update_option( 'checkin_monkeypay_note_prefix', sanitize_text_field( $params['note_prefix'] ) );
+        }
+        if ( ! empty( $params['note_syntax'] ) ) {
+            update_option( 'checkin_monkeypay_note_syntax', sanitize_text_field( $params['note_syntax'] ) );
+        }
+        if ( isset( $params['polling_interval'] ) ) {
+            update_option( 'checkin_monkeypay_polling_interval', absint( $params['polling_interval'] ) );
+        }
+        if ( ! empty( $params['account_number'] ) ) {
+            update_option( 'checkin_bank_account_number', sanitize_text_field( $params['account_number'] ) );
+        }
+        if ( ! empty( $params['account_name'] ) ) {
+            update_option( 'checkin_bank_account_name', sanitize_text_field( $params['account_name'] ) );
+        }
+        if ( isset( $params['auto_amount'] ) ) {
+            update_option( 'checkin_bank_auto_amount', absint( $params['auto_amount'] ) );
+        }
+    }
+
+    /**
+     * Admin proxy: Delete a gateway from server, then remove from local cache.
      */
     public static function delete_gateway( $request ) {
         $id           = $request->get_param( 'id' );
-        $admin_secret = get_option( 'monkeypay_admin_secret', '' );
+        $admin_secret = MonkeyPay_Settings::get( 'admin_secret' );
 
         $response = wp_remote_request( self::get_api_url() . '/api/admin/gateways/' . intval( $id ), [
             'method'  => 'DELETE',
@@ -156,22 +204,34 @@ class MonkeyPay_REST_Gateways {
         }
 
         $data = json_decode( wp_remote_retrieve_body( $response ), true );
+        $code = wp_remote_retrieve_response_code( $response );
+
+        // On success: remove from local cache
+        if ( $code < 400 ) {
+            MonkeyPay_Sync::remove_cached_gateway( intval( $id ) );
+        }
+
+        return new WP_REST_Response( [
+            'success' => $code < 400,
+            'data'    => $data,
+        ], $code );
+    }
+
+    /**
+     * Manual sync trigger (admin button).
+     */
+    public static function manual_sync() {
+        $result = MonkeyPay_Sync::sync_all( true );
 
         return new WP_REST_Response( [
             'success' => true,
-            'data'    => $data,
+            'data'    => $result,
         ], 200 );
     }
 
     /**
-     * Merchant-facing: list enabled gateways using local API key.
-     * Called by Checkin plugin / external apps to fetch available gateways.
-     *
-     * Accepts API key via:
-     *   - Header: X-Api-Key
-     *   - Query param: api_key
-     *
-     * Validates key locally via MonkeyPay_REST_API_Keys::validate_api_key().
+     * Merchant-facing: list enabled gateways from LOCAL CACHE.
+     * Uses local API key validation — no server roundtrip needed.
      */
     public static function merchant_gateways( $request ) {
         // Accept key from header or query param
@@ -197,36 +257,14 @@ class MonkeyPay_REST_Gateways {
             ], 401 );
         }
 
-        // Fetch gateways from server (same as admin list_gateways)
-        $server_api_key = get_option( 'monkeypay_api_key', '' );
-
-        $response = wp_remote_get( self::get_api_url() . '/api/gateways', [
-            'timeout' => 15,
-            'headers' => [
-                'X-Api-Key' => $server_api_key,
-            ],
-        ] );
-
-        if ( is_wp_error( $response ) ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => $response->get_error_message(),
-            ], 500 );
-        }
-
-        $code = wp_remote_retrieve_response_code( $response );
-        $data = json_decode( wp_remote_retrieve_body( $response ), true );
-
-        if ( $code >= 400 ) {
-            return new WP_REST_Response( [
-                'success' => false,
-                'message' => isset( $data['error'] ) ? $data['error'] : 'Failed to fetch gateways',
-            ], $code );
-        }
+        // Read from local cache (auto-syncs if stale)
+        $gateways = MonkeyPay_Sync::get_cached_gateways();
 
         return new WP_REST_Response( [
             'success' => true,
-            'data'    => $data,
+            'data'    => [
+                'gateways' => $gateways,
+            ],
         ], 200 );
     }
 }

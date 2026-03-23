@@ -61,23 +61,25 @@ class MonkeyPay_REST_Settings {
      * Save plugin settings.
      */
     public static function save_settings( $request ) {
-        $params   = $request->get_json_params();
-        $allowed  = [
-            'monkeypay_api_url',
-            'monkeypay_api_key',
-            'monkeypay_webhook_secret',
-            'monkeypay_admin_secret',
-            'monkeypay_enabled',
-            'monkeypay_wc_enabled',
-            'monkeypay_checkin_bridge',
-            'monkeypay_language',
-            'monkeypay_timezone',
-            'monkeypay_dark_mode',
+        $params = $request->get_json_params();
+
+        // Map full option keys → short keys for MonkeyPay_Settings
+        $allowed = [
+            'monkeypay_api_url'        => 'api_url',
+            'monkeypay_api_key'        => 'api_key',
+            'monkeypay_webhook_secret' => 'webhook_secret',
+            'monkeypay_admin_secret'   => 'admin_secret',
+            'monkeypay_enabled'        => 'enabled',
+            'monkeypay_wc_enabled'     => 'wc_enabled',
+            'monkeypay_checkin_bridge'  => 'checkin_bridge',
+            'monkeypay_language'       => 'language',
+            'monkeypay_timezone'       => 'timezone',
+            'monkeypay_dark_mode'      => 'dark_mode',
         ];
 
-        foreach ( $allowed as $key ) {
-            if ( isset( $params[ $key ] ) ) {
-                update_option( $key, sanitize_text_field( $params[ $key ] ) );
+        foreach ( $allowed as $full_key => $short_key ) {
+            if ( isset( $params[ $full_key ] ) ) {
+                MonkeyPay_Settings::set( $short_key, $params[ $full_key ] );
             }
         }
 

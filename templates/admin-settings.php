@@ -14,10 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-$api_url        = get_option( 'monkeypay_api_url', MONKEYPAY_API_URL );
-$api_key        = get_option( 'monkeypay_api_key', '' );
-$webhook_secret = get_option( 'monkeypay_webhook_secret', '' );
-$admin_secret   = get_option( 'monkeypay_admin_secret', '' );
+$api_url        = MonkeyPay_Settings::get( 'api_url', MONKEYPAY_API_URL );
+$api_key        = MonkeyPay_Settings::get( 'api_key', '' );
+$webhook_secret = MonkeyPay_Settings::get( 'webhook_secret', '' );
+$admin_secret   = MonkeyPay_Settings::get( 'admin_secret', '' );
 $has_api_key    = ! empty( $api_key );
 ?>
 
@@ -153,7 +153,7 @@ $has_api_key    = ! empty( $api_key );
                 <!-- Timezone — Modern Custom Dropdown -->
                 <div class="monkeypay-field">
                     <label for="monkeypay_timezone" data-i18n="timezone"><?php esc_html_e( 'Timezone', 'monkeypay' ); ?></label>
-                    <?php $tz = get_option( 'monkeypay_timezone', 'Asia/Ho_Chi_Minh' ); ?>
+                    <?php $tz = MonkeyPay_Settings::get( 'timezone', 'Asia/Ho_Chi_Minh' ); ?>
                     <input type="hidden" id="monkeypay_timezone" value="<?php echo esc_attr( $tz ); ?>">
                     <?php
                     $tz_options = [
@@ -192,7 +192,7 @@ $has_api_key    = ! empty( $api_key );
                 <!-- Language — Pill Toggle with SVG Flags -->
                 <div class="monkeypay-field">
                     <label data-i18n="language"><?php esc_html_e( 'Language', 'monkeypay' ); ?></label>
-                    <?php $lang = get_option( 'monkeypay_language', 'vi' ); ?>
+                    <?php $lang = MonkeyPay_Settings::get( 'language', 'vi' ); ?>
                     <div class="mp-settings-pills" data-mp-field="monkeypay_language">
                         <button type="button" class="mp-settings-pill<?php echo $lang === 'vi' ? ' mp-settings-pill--active' : ''; ?>"
                                 data-mp-value="vi">
@@ -210,7 +210,7 @@ $has_api_key    = ! empty( $api_key );
                 <!-- Appearance — Pill Toggle -->
                 <div class="monkeypay-field">
                     <label data-i18n="dark_mode"><?php esc_html_e( 'Appearance', 'monkeypay' ); ?></label>
-                    <?php $dm = get_option( 'monkeypay_dark_mode', 'light' ); ?>
+                    <?php $dm = MonkeyPay_Settings::get( 'dark_mode', 'light' ); ?>
                     <div class="mp-settings-pills" data-mp-field="monkeypay_dark_mode">
                         <button type="button" class="mp-settings-pill<?php echo $dm === 'light' ? ' mp-settings-pill--active' : ''; ?>"
                                 data-mp-value="light">

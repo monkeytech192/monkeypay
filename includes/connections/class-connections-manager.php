@@ -5,6 +5,9 @@
  * Manages outbound webhook connections to external platforms (Lark, Slack, Telegram, custom).
  * When a payment event occurs, dispatches notifications to all active connections.
  *
+ * All CRUD operations use the dedicated {prefix}monkeypay_connections table.
+ * The table is guaranteed to exist via activate() + admin_init hooks.
+ *
  * @package MonkeyPay
  * @since   2.1.0
  */
@@ -17,9 +20,6 @@ class MonkeyPay_Connections {
 
     /** @var MonkeyPay_Connections|null */
     private static $instance = null;
-
-    /** Option key for storing connections */
-    const OPTION_KEY = 'monkeypay_webhook_connections';
 
     /** Supported platforms */
     const PLATFORMS = [
@@ -115,13 +115,53 @@ class MonkeyPay_Connections {
     }
 
     /**
+     * Get the connections table name (shortcut).
+     *
+     * @return string
+     */
+    private function table() {
+        return MonkeyPay_DB::connections_table();
+    }
+
+    /**
+     * Unserialize a DB row into connection array format.
+     *
+     * @param array $row DB row (ARRAY_A)
+     * @return array
+     */
+    private function row_to_connection( $row ) {
+        return [
+            'id'                  => $row['id'],
+            'name'                => $row['name'],
+            'platform'            => $row['platform'],
+            'webhook_url'         => $row['webhook_url'],
+            'secret_key'          => $row['secret_key'],
+            'events'              => json_decode( $row['events'] ?? '[]', true ) ?: [],
+            'card_template'       => $row['card_template'],
+            'card_template_debit' => $row['card_template_debit'],
+            'enabled'             => (bool) $row['enabled'],
+            'created_at'          => $row['created_at'],
+            'updated_at'          => $row['updated_at'],
+        ];
+    }
+
+    /**
      * Get all connections.
      *
      * @return array
      */
     public function get_connections() {
-        $connections = get_option( self::OPTION_KEY, [] );
-        return is_array( $connections ) ? $connections : [];
+        global $wpdb;
+        $table = $this->table();
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $rows = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY created_at DESC", ARRAY_A );
+
+        if ( empty( $rows ) ) {
+            return [];
+        }
+
+        return array_map( [ $this, 'row_to_connection' ], $rows );
     }
 
     /**
@@ -131,13 +171,16 @@ class MonkeyPay_Connections {
      * @return array|null
      */
     public function get_connection( $id ) {
-        $connections = $this->get_connections();
-        foreach ( $connections as $conn ) {
-            if ( $conn['id'] === $id ) {
-                return $conn;
-            }
-        }
-        return null;
+        global $wpdb;
+        $table = $this->table();
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $row = $wpdb->get_row( $wpdb->prepare(
+            "SELECT * FROM {$table} WHERE id = %s",
+            $id
+        ), ARRAY_A );
+
+        return $row ? $this->row_to_connection( $row ) : null;
     }
 
     /**
@@ -147,25 +190,42 @@ class MonkeyPay_Connections {
      * @return array The created connection
      */
     public function add_connection( $data ) {
-        $connections = $this->get_connections();
-
         $connection = [
-            'id'            => wp_generate_uuid4(),
-            'name'          => sanitize_text_field( $data['name'] ?? '' ),
-            'platform'      => in_array( $data['platform'] ?? '', array_keys( self::PLATFORMS ), true )
-                               ? $data['platform'] : 'custom',
-            'webhook_url'   => esc_url_raw( $data['webhook_url'] ?? '' ),
-            'secret_key'    => sanitize_text_field( $data['secret_key'] ?? '' ),
-            'events'        => $this->sanitize_events( $data['events'] ?? [] ),
-            'card_template' => $data['card_template'] ?? null,
+            'id'                  => wp_generate_uuid4(),
+            'name'                => sanitize_text_field( $data['name'] ?? '' ),
+            'platform'            => in_array( $data['platform'] ?? '', array_keys( self::PLATFORMS ), true )
+                                       ? $data['platform'] : 'custom',
+            'webhook_url'         => esc_url_raw( $data['webhook_url'] ?? '' ),
+            'secret_key'          => sanitize_text_field( $data['secret_key'] ?? '' ),
+            'events'              => $this->sanitize_events( $data['events'] ?? [] ),
+            'card_template'       => $data['card_template'] ?? null,
             'card_template_debit' => $data['card_template_debit'] ?? null,
-            'enabled'       => (bool) ( $data['enabled'] ?? true ),
-            'created_at'    => current_time( 'mysql' ),
-            'updated_at'    => current_time( 'mysql' ),
+            'enabled'             => (bool) ( $data['enabled'] ?? true ),
+            'created_at'          => current_time( 'mysql' ),
+            'updated_at'          => current_time( 'mysql' ),
         ];
 
-        $connections[] = $connection;
-        update_option( self::OPTION_KEY, $connections );
+        global $wpdb;
+        $table = $this->table();
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $wpdb->insert(
+            $table,
+            [
+                'id'                  => $connection['id'],
+                'name'                => $connection['name'],
+                'platform'            => $connection['platform'],
+                'webhook_url'         => $connection['webhook_url'],
+                'secret_key'          => $connection['secret_key'],
+                'events'              => wp_json_encode( $connection['events'] ),
+                'card_template'       => $connection['card_template'],
+                'card_template_debit' => $connection['card_template_debit'],
+                'enabled'             => (int) $connection['enabled'],
+                'created_at'          => $connection['created_at'],
+                'updated_at'          => $connection['updated_at'],
+            ],
+            [ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s' ]
+        );
 
         return $connection;
     }
@@ -178,26 +238,32 @@ class MonkeyPay_Connections {
      * @return array|null  Updated connection or null
      */
     public function update_connection( $id, $data ) {
-        $connections = $this->get_connections();
+        global $wpdb;
+        $table = $this->table();
 
-        foreach ( $connections as &$conn ) {
-            if ( $conn['id'] === $id ) {
-                if ( isset( $data['name'] ) )          $conn['name']          = sanitize_text_field( $data['name'] );
-                if ( isset( $data['platform'] ) )      $conn['platform']      = in_array( $data['platform'], array_keys( self::PLATFORMS ), true ) ? $data['platform'] : $conn['platform'];
-                if ( isset( $data['webhook_url'] ) )   $conn['webhook_url']   = esc_url_raw( $data['webhook_url'] );
-                if ( isset( $data['secret_key'] ) )    $conn['secret_key']    = sanitize_text_field( $data['secret_key'] );
-                if ( isset( $data['events'] ) )        $conn['events']        = $this->sanitize_events( $data['events'] );
-                if ( array_key_exists( 'card_template', $data ) ) $conn['card_template'] = $data['card_template'];
-                if ( array_key_exists( 'card_template_debit', $data ) ) $conn['card_template_debit'] = $data['card_template_debit'];
-                if ( isset( $data['enabled'] ) )       $conn['enabled']       = (bool) $data['enabled'];
-                $conn['updated_at'] = current_time( 'mysql' );
+        // Build update columns
+        $update  = [ 'updated_at' => current_time( 'mysql' ) ];
+        $formats = [ '%s' ];
 
-                update_option( self::OPTION_KEY, $connections );
-                return $conn;
-            }
+        if ( isset( $data['name'] ) )        { $update['name']       = sanitize_text_field( $data['name'] ); $formats[] = '%s'; }
+        if ( isset( $data['platform'] ) )    { $update['platform']   = in_array( $data['platform'], array_keys( self::PLATFORMS ), true ) ? $data['platform'] : 'webhook'; $formats[] = '%s'; }
+        if ( isset( $data['webhook_url'] ) ) { $update['webhook_url'] = esc_url_raw( $data['webhook_url'] ); $formats[] = '%s'; }
+        if ( isset( $data['secret_key'] ) )  { $update['secret_key'] = sanitize_text_field( $data['secret_key'] ); $formats[] = '%s'; }
+        if ( isset( $data['events'] ) )      { $update['events']     = wp_json_encode( $this->sanitize_events( $data['events'] ) ); $formats[] = '%s'; }
+        if ( array_key_exists( 'card_template', $data ) )       { $update['card_template']       = $data['card_template']; $formats[] = '%s'; }
+        if ( array_key_exists( 'card_template_debit', $data ) ) { $update['card_template_debit'] = $data['card_template_debit']; $formats[] = '%s'; }
+        if ( isset( $data['enabled'] ) )     { $update['enabled']    = (int) (bool) $data['enabled']; $formats[] = '%d'; }
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $result = $wpdb->update( $table, $update, [ 'id' => $id ], $formats, [ '%s' ] );
+
+        if ( $result === false || $result === 0 ) {
+            // Check if row existed
+            $exists = $this->get_connection( $id );
+            return $exists ?: null;
         }
 
-        return null;
+        return $this->get_connection( $id );
     }
 
     /**
@@ -207,17 +273,12 @@ class MonkeyPay_Connections {
      * @return bool
      */
     public function delete_connection( $id ) {
-        $connections = $this->get_connections();
-        $filtered    = array_values( array_filter( $connections, function ( $c ) use ( $id ) {
-            return $c['id'] !== $id;
-        } ) );
+        global $wpdb;
+        $table = $this->table();
 
-        if ( count( $filtered ) === count( $connections ) ) {
-            return false; // Not found
-        }
-
-        update_option( self::OPTION_KEY, $filtered );
-        return true;
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $result = $wpdb->delete( $table, [ 'id' => $id ], [ '%s' ] );
+        return $result !== false && $result > 0;
     }
 
     /**

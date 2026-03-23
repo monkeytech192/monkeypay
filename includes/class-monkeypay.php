@@ -53,6 +53,11 @@ class MonkeyPay {
         // Logger MUST load first
         require_once $dir . 'class-monkeypay-logger.php';
 
+        // Database manager (before webhook — needed for insert)
+        require_once $dir . 'class-monkeypay-settings.php';
+        require_once $dir . 'class-monkeypay-db.php';
+        require_once $dir . 'class-monkeypay-sync.php';
+
         require_once $dir . 'class-monkeypay-api-client.php';
         require_once $dir . 'class-monkeypay-webhook.php';
         require_once $dir . 'class-monkeypay-rest-api.php';
@@ -120,27 +125,39 @@ class MonkeyPay {
 
         // First-time webhook URL sync for existing merchants
         add_action( 'admin_init', [ $this, 'maybe_sync_webhook_url' ] );
+
+        // Ensure DB tables are up to date (handles migrations)
+        add_action( 'admin_init', [ 'MonkeyPay_DB', 'create_tables' ] );
+
+        // Lazy sync gateways + merchant profile on MonkeyPay admin pages
+        add_action( 'admin_init', [ $this, 'maybe_lazy_sync' ] );
     }
 
     /**
      * Plugin activation.
      */
     public function activate() {
-        // Set default options
+        // 1. Create/upgrade custom database tables FIRST
+        MonkeyPay_DB::create_tables();
+
+        // 2. Set default settings (goes into monkeypay_settings table)
         $defaults = [
-            'monkeypay_api_url'       => MONKEYPAY_API_URL,
-            'monkeypay_api_key'       => '',
-            'monkeypay_webhook_secret' => '',
-            'monkeypay_enabled'       => '0',
-            'monkeypay_wc_enabled'    => '0',
-            'monkeypay_checkin_bridge' => '0',
+            'api_url'        => MONKEYPAY_API_URL,
+            'api_key'        => '',
+            'webhook_secret' => '',
+            'enabled'        => '0',
+            'wc_enabled'     => '0',
+            'checkin_bridge'  => '0',
         ];
 
         foreach ( $defaults as $key => $value ) {
-            if ( false === get_option( $key ) ) {
-                add_option( $key, $value );
+            if ( MonkeyPay_Settings::get( $key ) === null ) {
+                MonkeyPay_Settings::set( $key, $value );
             }
         }
+
+        // 3. Sync gateways + merchant profile from server on activation
+        MonkeyPay_Sync::sync_all( true );
 
         flush_rewrite_rules();
     }
@@ -149,6 +166,8 @@ class MonkeyPay {
      * Plugin deactivation.
      */
     public function deactivate() {
+        // Clear sync cache so next activation triggers fresh sync
+        delete_transient( MonkeyPay_Sync::LAST_SYNC_KEY );
         flush_rewrite_rules();
     }
 
@@ -162,16 +181,16 @@ class MonkeyPay {
      */
     public function maybe_sync_webhook_url() {
         // Already synced — skip
-        if ( get_option( 'monkeypay_webhook_synced', '0' ) === '1' ) {
+        if ( MonkeyPay_Settings::get( 'webhook_synced' ) === '1' ) {
             return;
         }
 
-        $api_key = get_option( 'monkeypay_api_key', '' );
+        $api_key = MonkeyPay_Settings::get( 'api_key' );
         if ( empty( $api_key ) ) {
             return; // Not registered yet
         }
 
-        $api_url     = rtrim( get_option( 'monkeypay_api_url', MONKEYPAY_API_URL ), '/' );
+        $api_url     = rtrim( MonkeyPay_Settings::get( 'api_url', MONKEYPAY_API_URL ), '/' );
         $webhook_url = rest_url( 'monkeypay/v1/webhook' );
 
         $response = wp_remote_request( $api_url . '/api/merchants/webhook-url', [
@@ -192,13 +211,43 @@ class MonkeyPay {
         $code = wp_remote_retrieve_response_code( $response );
 
         if ( $code >= 200 && $code < 300 ) {
-            update_option( 'monkeypay_webhook_synced', '1' );
+            MonkeyPay_Settings::set( 'webhook_synced', '1' );
             MonkeyPay_Logger::api( "Webhook URL synced successfully: {$webhook_url}" );
         } else {
             $body = wp_remote_retrieve_body( $response );
             MonkeyPay_Logger::api( "Webhook sync failed (HTTP {$code}): {$body}" );
             // Don't set flag — will retry on next admin load
         }
+    }
+
+    /**
+     * Lazy sync gateways + merchant profile from server.
+     *
+     * Runs on admin_init. Only triggers on MonkeyPay admin pages
+     * and only if the cache is stale (older than 5 minutes).
+     *
+     * @since 3.3.0
+     */
+    public function maybe_lazy_sync() {
+        // Only run on MonkeyPay admin pages
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        $is_monkeypay_page = false;
+
+        if ( $screen && isset( $screen->id ) && strpos( $screen->id, 'monkeypay' ) !== false ) {
+            $is_monkeypay_page = true;
+        }
+
+        // Also check via query param for early admin_init
+        if ( ! $is_monkeypay_page && isset( $_GET['page'] ) && strpos( sanitize_text_field( wp_unslash( $_GET['page'] ) ), 'monkeypay' ) !== false ) { // phpcs:ignore WordPress.Security.NonceVerification
+            $is_monkeypay_page = true;
+        }
+
+        if ( ! $is_monkeypay_page ) {
+            return;
+        }
+
+        // Sync only if cache is stale
+        MonkeyPay_Sync::sync_all();
     }
 
     /**
@@ -239,12 +288,12 @@ class MonkeyPay {
             'adminUrl'       => admin_url(),
             'restUrl'        => rest_url( 'monkeypay/v1/' ),
             'pluginUrl'      => MONKEYPAY_PLUGIN_URL,
-            'apiUrl'         => rtrim( get_option( 'monkeypay_api_url', MONKEYPAY_API_URL ), '/' ),
+            'apiUrl'         => rtrim( MonkeyPay_Settings::get( 'api_url', MONKEYPAY_API_URL ), '/' ),
             'nonce'          => wp_create_nonce( 'wp_rest' ),
-            'authProvider'   => get_option( 'monkeypay_auth_provider', 'password' ),
-            'language'       => get_option( 'monkeypay_language', 'vi' ),
-            'timezone'       => get_option( 'monkeypay_timezone', 'Asia/Ho_Chi_Minh' ),
-            'darkMode'       => get_option( 'monkeypay_dark_mode', 'light' ),
+            'authProvider'   => MonkeyPay_Settings::get( 'auth_provider' ),
+            'language'       => MonkeyPay_Settings::get( 'language' ),
+            'timezone'       => MonkeyPay_Settings::get( 'timezone' ),
+            'darkMode'       => MonkeyPay_Settings::get( 'dark_mode' ),
             'i18n'           => [
                 'connecting'   => __( 'Đang kết nối...', 'monkeypay' ),
                 'connected'    => __( 'Đã kết nối', 'monkeypay' ),
@@ -274,7 +323,7 @@ class MonkeyPay {
 
         // ── Onboarding gate: load onboarding.js (no client-side Google SDK needed — uses server redirect) ──
         $page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-        $needs_onboarding = empty( get_option( 'monkeypay_api_key', '' ) );
+        $needs_onboarding = empty( MonkeyPay_Settings::get( 'api_key' ) );
 
         if ( $needs_onboarding && strpos( $page, 'monkeypay' ) === 0 ) {
             // Onboarding module
@@ -405,7 +454,7 @@ class MonkeyPay {
      * Register WooCommerce payment gateway.
      */
     public function register_wc_gateway( $gateways ) {
-        if ( class_exists( 'MonkeyPay_WooCommerce_Gateway' ) && get_option( 'monkeypay_wc_enabled', '0' ) === '1' ) {
+        if ( class_exists( 'MonkeyPay_WooCommerce_Gateway' ) && MonkeyPay_Settings::get( 'wc_enabled' ) === '1' ) {
             $gateways[] = 'MonkeyPay_WooCommerce_Gateway';
         }
         return $gateways;
@@ -415,8 +464,8 @@ class MonkeyPay {
      * Helper: Check if plugin is configured and enabled.
      */
     public function is_active() {
-        return get_option( 'monkeypay_enabled', '0' ) === '1'
-            && ! empty( get_option( 'monkeypay_api_key', '' ) );
+        return MonkeyPay_Settings::get( 'enabled' ) === '1'
+            && ! empty( MonkeyPay_Settings::get( 'api_key' ) );
     }
 
     /**

@@ -35,6 +35,19 @@
                     form.querySelector('[name="account_number"]').value = gw.account_number || '';
                     form.querySelector('[name="account_name"]').value = gw.account_name || '';
 
+                    // Populate config fields
+                    const autoAmountEl = form.querySelector('[name="auto_amount"]');
+                    if (autoAmountEl) autoAmountEl.checked = gw.auto_amount !== 0;
+
+                    const notePrefixEl = form.querySelector('[name="note_prefix"]');
+                    if (notePrefixEl && gw.note_prefix) notePrefixEl.value = gw.note_prefix;
+
+                    const noteSyntaxEl = form.querySelector('[name="note_syntax"]');
+                    if (noteSyntaxEl && gw.note_syntax) noteSyntaxEl.value = gw.note_syntax;
+
+                    const pollingEl = form.querySelector('[name="polling_interval"]');
+                    if (pollingEl && gw.polling_interval) pollingEl.value = gw.polling_interval;
+
                     // Store gateway ID
                     card.dataset.gatewayId = gw.id;
 
@@ -87,11 +100,21 @@
 
         const bankNames = { mbbank: 'MB Bank' };
 
+        // Collect config fields
+        const autoAmountEl = form.querySelector('[name="auto_amount"]');
+        const notePrefixEl = form.querySelector('[name="note_prefix"]');
+        const noteSyntaxEl = form.querySelector('[name="note_syntax"]');
+        const pollingEl    = form.querySelector('[name="polling_interval"]');
+
         const payload = {
             bank_code: bankCode,
             bank_name: bankNames[bankCode] || bankCode,
             account_number: accountNumber,
             account_name: form.querySelector('[name="account_name"]').value.trim().toUpperCase(),
+            auto_amount: autoAmountEl ? (autoAmountEl.checked ? 1 : 0) : 1,
+            note_prefix: notePrefixEl ? notePrefixEl.value.trim().toUpperCase() : 'MP',
+            note_syntax: noteSyntaxEl ? noteSyntaxEl.value.trim() : '{prefix}{random:6}',
+            polling_interval: pollingEl ? parseInt(pollingEl.value, 10) || 5 : 5,
         };
 
         btn.classList.add('loading');
