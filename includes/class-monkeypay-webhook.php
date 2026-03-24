@@ -190,8 +190,22 @@ class MonkeyPay_Webhook {
         do_action( 'monkeypay_payment_confirmed', $tx_id, $data );
 
         // Dispatch to webhook connections (Lark, Slack, custom, etc.)
+        // Enrich data with bank info from server webhook payload
+        $dispatch_data = [
+            'amount'       => $amount,
+            'payment_note' => $payment_note,
+            'description'  => isset( $data['description'] ) ? sanitize_text_field( $data['description'] ) : '',
+            'bank_name'    => isset( $data['bank_name'] ) ? sanitize_text_field( $data['bank_name'] ) : 'MB Bank',
+            'account_no'   => isset( $data['account_number'] ) ? sanitize_text_field( $data['account_number'] ) : '',
+            'tx_id'        => $tx_id,
+            'bdsd_id'      => isset( $data['bdsd_id'] ) ? 'BDSD-' . $data['bdsd_id'] : '',
+            'matched_at'   => isset( $data['completed_at'] )
+                ? date( 'd/m/Y H:i:s', strtotime( $data['completed_at'] ) )
+                : current_time( 'd/m/Y H:i:s' ),
+        ];
+
         $connections = MonkeyPay_Connections::get_instance();
-        $connections->dispatch_event( 'payment_received', $data );
+        $connections->dispatch_event( 'payment_received', $dispatch_data );
 
         MonkeyPay_Logger::transaction( "Payment confirmed: {$tx_id}", [
             'amount'       => $amount,
