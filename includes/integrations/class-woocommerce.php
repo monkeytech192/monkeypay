@@ -155,9 +155,13 @@ class MonkeyPay_WooCommerce_Gateway extends WC_Payment_Gateway {
             return;
         }
 
-        // Enqueue payment assets
-        wp_enqueue_style( 'monkeypay-payment', MONKEYPAY_PLUGIN_URL . 'assets/css/payment.css', [], MONKEYPAY_VERSION );
-        wp_enqueue_script( 'monkeypay-payment', MONKEYPAY_PLUGIN_URL . 'assets/js/payment.js', [ 'jquery' ], MONKEYPAY_VERSION, true );
+        // Enqueue payment assets with filemtime-based cache busting
+        $css_path = MONKEYPAY_PLUGIN_DIR . 'assets/css/payment.css';
+        $js_path  = MONKEYPAY_PLUGIN_DIR . 'assets/js/payment.js';
+        $css_ver  = MONKEYPAY_VERSION . '.' . ( file_exists( $css_path ) ? filemtime( $css_path ) : 0 );
+        $js_ver   = MONKEYPAY_VERSION . '.' . ( file_exists( $js_path ) ? filemtime( $js_path ) : 0 );
+        wp_enqueue_style( 'monkeypay-payment', MONKEYPAY_PLUGIN_URL . 'assets/css/payment.css', [], $css_ver );
+        wp_enqueue_script( 'monkeypay-payment', MONKEYPAY_PLUGIN_URL . 'assets/js/payment.js', [ 'jquery' ], $js_ver, true );
         wp_localize_script( 'monkeypay-payment', 'monkeypayPayment', [
             'restUrl'   => rest_url( 'monkeypay/v1/' ),
             'nonce'     => wp_create_nonce( 'wp_rest' ),

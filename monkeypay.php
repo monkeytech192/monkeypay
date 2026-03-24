@@ -4,7 +4,7 @@
  * Plugin Name: MonkeyPay - Cổng Thanh Toán Tự Động
  * Plugin URI:  https://monkeytech192.vn/monkeypay
  * Description: Cổng thanh toán chuyển khoản ngân hàng tự động. Tích hợp MB Bank, WooCommerce, và hệ sinh thái Monkey.
- * Version:     3.4.0
+ * Version:     3.4.1
  * Author:      Monkey Tech 192
  * Author URI:  https://monkeytech192.vn/
  * Text Domain: monkeypay

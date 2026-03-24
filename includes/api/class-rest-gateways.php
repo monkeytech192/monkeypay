@@ -147,6 +147,9 @@ class MonkeyPay_REST_Gateways {
 
             // Sync gateway config to WP options for Checkin plugin integration
             self::sync_gateway_options( $params );
+
+            // Invalidate checkin-bridge gateway config cache so changes take effect immediately
+            delete_transient( 'monkeypay_gateway_config' );
         }
 
         return new WP_REST_Response( [

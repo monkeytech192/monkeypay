@@ -285,19 +285,43 @@ class MonkeyPay_Checkin_Bridge {
 
     /**
      * REST: Return active gateway config (note_prefix, note_syntax, auto_amount, polling_interval).
-     * Fetches from MonkeyPay Server, cached in transient for 5 minutes.
+     * Reads from LOCAL DB cache (synced when admin saves gateway).
+     * Falls back to remote API only if local cache is empty.
      */
     public function rest_gateway_config() {
-        // Check cache first
-        $cached = get_transient( 'monkeypay_gateway_config' );
-        if ( false !== $cached ) {
+        // 1. Read from local DB cache first (most up-to-date after admin save)
+        $gateways = MonkeyPay_Sync::get_cached_gateways();
+
+        if ( ! empty( $gateways ) ) {
+            // Find active gateway (first with status/enabled)
+            $active = null;
+            foreach ( $gateways as $gw ) {
+                if ( ! empty( $gw['enabled'] ) ) {
+                    $active = $gw;
+                    break;
+                }
+            }
+
+            // Fallback to first gateway
+            if ( ! $active ) {
+                $active = $gateways[0];
+            }
+
+            $config = [
+                'auto_amount'      => (bool) ( $active['auto_amount'] ?? true ),
+                'note_prefix'      => $active['note_prefix'] ?? 'MKT',
+                'note_syntax'      => $active['note_syntax'] ?? '{invoice_id}',
+                'polling_interval' => intval( $active['polling_interval'] ?? 5 ),
+            ];
+
             return new WP_REST_Response( [
                 'success' => true,
-                'data'    => $cached,
-                'cached'  => true,
+                'data'    => $config,
+                'source'  => 'local_cache',
             ], 200 );
         }
 
+        // 2. Local cache empty — try remote API
         $api_key = MonkeyPay_Settings::get( 'api_key' );
         $api_url = MonkeyPay_Settings::get( 'api_url', MONKEYPAY_API_URL );
         $api_url = rtrim( ! empty( $api_url ) ? $api_url : MONKEYPAY_API_URL, '/' );
@@ -349,9 +373,6 @@ class MonkeyPay_Checkin_Bridge {
             'note_syntax'      => $active['note_syntax'] ?? '{invoice_id}',
             'polling_interval' => intval( $active['polling_interval'] ?? 5 ),
         ];
-
-        // Cache for 5 minutes
-        set_transient( 'monkeypay_gateway_config', $config, 5 * MINUTE_IN_SECONDS );
 
         return new WP_REST_Response( [
             'success' => true,

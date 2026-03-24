@@ -54,6 +54,28 @@ window.mpPlatformMeta = <?php echo wp_json_encode( $platform_meta ); ?>;
 window.mpConnections  = <?php echo wp_json_encode( $connections_list ); ?>;
 </script>
 
+<!-- Mobile Balance Summary (visible only on mobile ≤600px) -->
+<div class="mp-mobile-balance mp-fade-up">
+    <div class="mp-mobile-balance__card mp-mobile-balance__card--in">
+        <span class="mp-mobile-balance__label" data-i18n="money_in">Tiền vào</span>
+        <span class="mp-mobile-balance__value" id="mp-mob-in">0 ₫</span>
+        <span class="mp-mobile-balance__count" id="mp-mob-in-count">0 GD</span>
+    </div>
+    <div class="mp-mobile-balance__card mp-mobile-balance__card--out">
+        <span class="mp-mobile-balance__label" data-i18n="money_out">Tiền ra</span>
+        <span class="mp-mobile-balance__value" id="mp-mob-out">0 ₫</span>
+        <span class="mp-mobile-balance__count" id="mp-mob-out-count">0 GD</span>
+    </div>
+    <div class="mp-mobile-balance__card mp-mobile-balance__card--total">
+        <span class="mp-mobile-balance__label" data-i18n="total_transactions">Tổng giao dịch</span>
+        <span class="mp-mobile-balance__value" id="mp-mob-total">0</span>
+    </div>
+    <div class="mp-mobile-balance__card mp-mobile-balance__card--balance">
+        <span class="mp-mobile-balance__label" data-i18n="current_balance">Số dư hiện tại</span>
+        <span class="mp-mobile-balance__value" id="mp-mob-balance">0 ₫</span>
+    </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════════
      DASHBOARD 2-COLUMN LAYOUT
      Left (1/3): Membership Card + Quick Actions (vertical)
@@ -110,6 +132,28 @@ window.mpConnections  = <?php echo wp_json_encode( $connections_list ); ?>;
                     <span class="mp-member-card__expiry-label" data-i18n="card_expiry">HẾT HẠN</span>
                     <span class="mp-member-card__expiry-value" id="mp-card-expiry">—</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Quick Action Icons (Tablet/Mobile only) -->
+        <div class="mp-qa-icons-row">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay-connections' ) ); ?>" class="mp-qa-icon-btn">
+                <div class="mp-qa-icon-circle mp-qa-icon-circle--conn">
+                    <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <span data-i18n="qa_connections"><?php esc_html_e( 'Kết nối', 'monkeypay' ); ?></span>
+            </a>
+            <div class="mp-qa-icon-btn" id="mp-qa-create-key-icon">
+                <div class="mp-qa-icon-circle mp-qa-icon-circle--key">
+                    <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                </div>
+                <span>API Keys</span>
+            </div>
+            <div class="mp-qa-icon-btn" id="mp-qa-create-gateway-icon">
+                <div class="mp-qa-icon-circle mp-qa-icon-circle--gateway">
+                    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                </div>
+                <span data-i18n="qa_gateways"><?php esc_html_e( 'Cổng TT', 'monkeypay' ); ?></span>
             </div>
         </div>
 
@@ -386,7 +430,7 @@ window.mpConnections  = <?php echo wp_json_encode( $connections_list ); ?>;
                 <span data-i18n="no_transactions">Không có giao dịch nào trong khoảng thời gian này</span>
             </div>
 
-            <!-- Table -->
+            <!-- Table (desktop) -->
             <div id="mp-tx-table" class="mp-tx-table-wrap" style="display:none">
                 <table class="mp-tx-table">
                     <thead>
@@ -395,11 +439,15 @@ window.mpConnections  = <?php echo wp_json_encode( $connections_list ); ?>;
                             <th class="mp-tx-col-desc" data-i18n="col_desc">Mô tả</th>
                             <th class="mp-tx-col-amount" data-i18n="col_amount">Số tiền</th>
                             <th class="mp-tx-col-balance" data-i18n="col_balance">Số dư</th>
+                            <th class="mp-tx-col-status" data-i18n="col_status">Trạng thái</th>
                         </tr>
                     </thead>
                     <tbody id="mp-tx-tbody"></tbody>
                 </table>
             </div>
+
+            <!-- Mobile list (shown via CSS @media) -->
+            <div id="mp-tx-mobile" class="mp-tx-mobile-list" style="display:none"></div>
         </div>
 
     </div><!-- .mp-dashboard-right -->
@@ -512,6 +560,32 @@ window.mpConnections  = <?php echo wp_json_encode( $connections_list ); ?>;
         </div>
     </div>
 </div>
+
+    <!-- Bottom Navigation Bar (Tablet/Mobile) -->
+    <nav class="mp-bottom-nav" id="mp-bottom-nav">
+        <div class="mp-bottom-nav__inner">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay' ) ); ?>" class="mp-bottom-nav__item mp-bottom-nav__item--active">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <span data-i18n="nav_overview"><?php esc_html_e( 'Tổng quan', 'monkeypay' ); ?></span>
+            </a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay-transactions' ) ); ?>" class="mp-bottom-nav__item">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                <span data-i18n="nav_transactions"><?php esc_html_e( 'Giao dịch', 'monkeypay' ); ?></span>
+            </a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay-connections' ) ); ?>" class="mp-bottom-nav__item">
+                <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                <span data-i18n="nav_connections"><?php esc_html_e( 'Kết nối', 'monkeypay' ); ?></span>
+            </a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay-apikeys' ) ); ?>" class="mp-bottom-nav__item">
+                <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                <span data-i18n="nav_apikeys">API Keys</span>
+            </a>
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=monkeypay-settings' ) ); ?>" class="mp-bottom-nav__item">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                <span data-i18n="nav_settings"><?php esc_html_e( 'Cài đặt', 'monkeypay' ); ?></span>
+            </a>
+        </div>
+    </nav>
 
     </div><!-- .monkeypay-admin-page -->
 </div><!-- .monkeypay-admin-wrap -->

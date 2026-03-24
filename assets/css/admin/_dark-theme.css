@@ -1183,3 +1183,85 @@ html[data-mp-theme="dark"] body {
     color: rgba(255,255,255,0.8);
     border-color: rgba(255,255,255,0.25);
 }
+
+/* ═══════════════════════════════════════════════════
+   26. TRANSACTION STATUS BADGES (Dashboard)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-tx-status-badge {
+    color: var(--mp-text-secondary, #94a3b8);
+    background: rgba(255,255,255,0.06);
+}
+
+[data-mp-theme="dark"] .mp-tx-status-badge--success {
+    background: rgba(16, 185, 129, 0.12);
+    color: #6ee7b7;
+}
+
+[data-mp-theme="dark"] .mp-tx-status-badge--pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+}
+
+[data-mp-theme="dark"] .mp-tx-status-badge--failed {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+}
+
+/* ═══════════════════════════════════════════════════
+   27. QUICK ACTION ICON ROW (Tablet / Mobile)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-qa-icons-row {
+    background: var(--mp-card-bg, #1e293b);
+    border-color: rgba(255,255,255,0.08);
+}
+
+[data-mp-theme="dark"] .mp-qa-icon-btn {
+    color: var(--mp-text-secondary, #94a3b8);
+}
+
+[data-mp-theme="dark"] .mp-qa-icon-btn:hover,
+[data-mp-theme="dark"] .mp-qa-icon-btn:active {
+    color: var(--mp-primary, #10b981);
+}
+
+[data-mp-theme="dark"] .mp-qa-icon-btn .mp-qa-icon-circle {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.10);
+}
+
+[data-mp-theme="dark"] .mp-qa-icon-btn:hover .mp-qa-icon-circle {
+    background: rgba(16, 185, 129, 0.10);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+[data-mp-theme="dark"] .mp-qa-icon-btn .mp-qa-icon-label {
+    color: var(--mp-text-secondary, #94a3b8);
+}
+
+/* ═══════════════════════════════════════════════════
+   28. BOTTOM NAVIGATION BAR (Tablet / Mobile)
+   ═══════════════════════════════════════════════════ */
+
+[data-mp-theme="dark"] .mp-bottom-nav {
+    background: var(--mp-card-bg, #1e293b);
+    border-top-color: rgba(255,255,255,0.08);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4);
+}
+
+[data-mp-theme="dark"] .mp-bottom-nav__item {
+    color: var(--mp-text-secondary, #64748b);
+}
+
+[data-mp-theme="dark"] .mp-bottom-nav__item:hover {
+    color: var(--mp-text-primary, #e2e8f0);
+}
+
+[data-mp-theme="dark"] .mp-bottom-nav__item.is-active {
+    color: var(--mp-primary, #10b981);
+}
+
+[data-mp-theme="dark"] .mp-bottom-nav__label {
+    color: inherit;
+}

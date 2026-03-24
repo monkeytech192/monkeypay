@@ -156,13 +156,32 @@ class MonkeyPay_Sync {
                 'account_name'     => sanitize_text_field( $gw['account_name'] ?? '' ),
                 'username'         => sanitize_text_field( $gw['username'] ?? '' ),
                 'phone'            => sanitize_text_field( $gw['phone'] ?? '' ),
-                'note_prefix'      => sanitize_text_field( $gw['note_prefix'] ?? 'MP' ),
-                'note_syntax'      => sanitize_text_field( $gw['note_syntax'] ?? '{prefix}{random:6}' ),
-                'auto_amount'      => isset( $gw['auto_amount'] ) ? intval( $gw['auto_amount'] ) : 1,
-                'polling_interval' => isset( $gw['polling_interval'] ) ? intval( $gw['polling_interval'] ) : 5,
                 'enabled'          => isset( $gw['enabled'] ) ? intval( $gw['enabled'] ) : 1,
                 'synced_at'        => $now,
             ];
+
+            // Config fields: CHỈ ghi đè khi server response CÓ chứa field
+            // (tránh sync default 'MP' ghi đè config user đã set, ví dụ 'KYO')
+            if ( array_key_exists( 'note_prefix', $gw ) ) {
+                $data['note_prefix'] = sanitize_text_field( $gw['note_prefix'] ?? 'MP' );
+            }
+            if ( array_key_exists( 'note_syntax', $gw ) ) {
+                $data['note_syntax'] = sanitize_text_field( $gw['note_syntax'] ?? '{prefix}{random:6}' );
+            }
+            if ( array_key_exists( 'auto_amount', $gw ) ) {
+                $data['auto_amount'] = intval( $gw['auto_amount'] );
+            }
+            if ( array_key_exists( 'polling_interval', $gw ) ) {
+                $data['polling_interval'] = intval( $gw['polling_interval'] );
+            }
+
+            // INSERT mới thì dùng default cho config fields nếu thiếu
+            if ( ! $existing ) {
+                if ( ! isset( $data['note_prefix'] ) )      $data['note_prefix'] = sanitize_text_field( $gw['note_prefix'] ?? 'MP' );
+                if ( ! isset( $data['note_syntax'] ) )      $data['note_syntax'] = sanitize_text_field( $gw['note_syntax'] ?? '{prefix}{random:6}' );
+                if ( ! isset( $data['auto_amount'] ) )      $data['auto_amount'] = isset( $gw['auto_amount'] ) ? intval( $gw['auto_amount'] ) : 1;
+                if ( ! isset( $data['polling_interval'] ) ) $data['polling_interval'] = isset( $gw['polling_interval'] ) ? intval( $gw['polling_interval'] ) : 5;
+            }
 
             if ( $existing ) {
                 // UPDATE existing

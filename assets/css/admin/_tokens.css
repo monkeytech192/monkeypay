@@ -1,24 +1,33 @@
 /**
- * MonkeyPay Admin — MonkeyPOS Design System
+ * MonkeyPay Admin — Stitch Design System
  *
- * Cyan/Teal palette, glassmorphism, 8px grid, no emojis
+ * Stitch palette, glassmorphism, 8px grid
+ * Primary: #00687a (surface-tint), Container: #06b6d4
  *
  * @package MonkeyPay
- * @since   1.0.0
+ * @since   5.0.0
  */
 
 /* ═══════════════════════════════════════════════════
-   CSS Variables — MonkeyPOS Tokens
+   CSS Variables — Stitch Design Tokens
    ═══════════════════════════════════════════════════ */
 :root {
-    /* Primary (Cyan/Teal Tech) */
-    --mp-primary: #06b6d4;
-    --mp-primary-light: #22d3ee;
-    --mp-primary-dark: #0891b2;
+    /* Primary (Stitch — Deep Teal) */
+    --mp-primary: #00687a;
+    --mp-primary-light: #4cd7f6;
+    --mp-primary-dark: #004e5c;
     --mp-primary-50: #ecfeff;
     --mp-primary-100: #cffafe;
     --mp-primary-200: #a5f3fc;
     --mp-primary-700: #0e7490;
+
+    /* Stitch Material 3 extensions */
+    --mp-primary-container: #06b6d4;
+    --mp-on-primary: #ffffff;
+    --mp-on-primary-container: #00424f;
+    --mp-on-surface: #191c1e;
+    --mp-on-surface-variant: #3d494c;
+    --mp-outline-variant: #bcc9cd;
 
     /* Semantic */
     --mp-success: #10b981;
@@ -26,21 +35,25 @@
     --mp-error: #ef4444;
     --mp-info: #3b82f6;
 
-    /* Backgrounds (Light Mode) */
-    --mp-bg: #f8fafc;
+    /* Backgrounds — Stitch surface system */
+    --mp-bg: #f7f9fb;
     --mp-bg-card: rgba(255, 255, 255, 0.7);
     --mp-bg-input: rgba(255, 255, 255, 0.8);
     --mp-bg-surface: #ffffff;
+    --mp-bg-elevated: #ffffff;
+    --mp-surface-container: #eceef0;
+    --mp-surface-container-low: #f2f4f6;
+    --mp-surface-container-high: #e6e8ea;
 
     /* Text */
-    --mp-text: #0f172a;
-    --mp-text-secondary: #475569;
-    --mp-text-muted: #94a3b8;
+    --mp-text: #191c1e;
+    --mp-text-secondary: #3d494c;
+    --mp-text-muted: #6d797d;
 
     /* Borders */
     --mp-border: rgba(0, 0, 0, 0.08);
     --mp-border-light: #f1f5f9;
-    --mp-border-active: #06b6d4;
+    --mp-border-active: #00687a;
 
     /* Surfaces */
     --mp-surface: #ffffff;
@@ -59,13 +72,15 @@
     --mp-radius-md: 8px;
     --mp-radius-lg: 12px;
     --mp-radius-xl: 16px;
+    --mp-radius-2xl: 24px;
     --mp-radius-full: 9999px;
 
-    /* Shadows */
+    /* Shadows — Stitch glassmorphism */
     --mp-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
     --mp-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
     --mp-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-    --mp-shadow-primary: 0 4px 15px rgba(6, 182, 212, 0.3);
+    --mp-shadow-glass: 0 8px 32px 0 rgba(15, 15, 35, 0.04);
+    --mp-shadow-primary: 0 4px 15px rgba(0, 104, 122, 0.3);
 
     /* Motion */
     --mp-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);

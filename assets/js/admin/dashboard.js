@@ -487,6 +487,7 @@
         $('#mp-cashflow-chart').hide();
         $('#mp-tx-loading').show();
         $('#mp-tx-table').hide();
+        $('#mp-tx-mobile').hide();
         $('#mp-tx-empty').hide();
 
         try {
@@ -609,6 +610,7 @@
                     renderTransactions(displayTxs);
                     $('#mp-tx-empty').hide();
                     $('#mp-tx-table').show();
+                    $('#mp-tx-mobile').show();
 
                     if (txs.length > MAX_DASHBOARD_ROWS) {
                         $('#mp-tx-view-all').show();
@@ -618,6 +620,7 @@
                 }
             } else {
                 $('#mp-tx-table').hide();
+                $('#mp-tx-mobile').hide();
                 $('#mp-tx-empty').show();
                 $('#mp-tx-view-all').hide();
                 updateChart([]);
@@ -626,6 +629,7 @@
             console.error('Bank history error:', err);
             $('#mp-tx-loading').hide();
             $('#mp-tx-table').hide();
+            $('#mp-tx-mobile').hide();
             $('#mp-tx-empty').show();
             updateChart([]);
         }
@@ -637,7 +641,9 @@
 
     function renderTransactions(txs) {
         const tbody = $('#mp-tx-tbody');
+        const mobileList = $('#mp-tx-mobile');
         tbody.empty();
+        mobileList.empty();
 
         txs.forEach(tx => {
             const credit = parseFloat(tx.creditAmount || 0);
@@ -651,13 +657,54 @@
             const time = formatTime(rawTime);
             const balance = tx.balanceAvailable;
 
+            // Determine status
+            var statusKey = tx.status || 'success';
+            var statusLabel, statusClass, statusIcon;
+            switch (statusKey) {
+                case 'pending':
+                    statusLabel = MP.__ ? MP.__('status_pending') : 'Đang xử lý';
+                    statusClass = 'mp-tx-status-badge--pending';
+                    statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+                    break;
+                case 'failed':
+                    statusLabel = MP.__ ? MP.__('status_failed') : 'Thất bại';
+                    statusClass = 'mp-tx-status-badge--failed';
+                    statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+                    break;
+                default:
+                    statusLabel = MP.__ ? MP.__('status_success') : 'Thành công';
+                    statusClass = 'mp-tx-status-badge--success';
+                    statusIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+            }
+
+            // Desktop table row
             const tr = $('<tr>')
                 .append($('<td>').addClass('mp-tx-col-time').html(`<span class="mp-tx-time">${MP.escHtml(time)}</span>`))
                 .append($('<td>').addClass('mp-tx-col-desc').html(`<span class="mp-tx-desc" title="${MP.escHtml(desc)}">${MP.escHtml(desc)}</span>`))
                 .append($('<td>').addClass('mp-tx-col-amount ' + amountClass).text(amountPrefix + MP.formatVND(amount)))
-                .append($('<td>').addClass('mp-tx-col-balance').text(balance != null ? MP.formatVND(balance) : '—'));
-
+                .append($('<td>').addClass('mp-tx-col-balance').text(balance != null ? MP.formatVND(balance) : '—'))
+                .append($('<td>').addClass('mp-tx-col-status').html('<span class="mp-tx-status-badge ' + statusClass + '">' + statusIcon + ' ' + MP.escHtml(statusLabel) + '</span>'));
             tbody.append(tr);
+
+            // Mobile list item
+            var iconSvg = isCredit
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+            var iconClass = isCredit ? 'mp-tx-mobile__icon--credit' : 'mp-tx-mobile__icon--debit';
+            var amountValClass = isCredit ? 'mp-tx-mobile__amount-value--credit' : 'mp-tx-mobile__amount-value--debit';
+
+            var item = $('<div class="mp-tx-mobile-item">' +
+                '<div class="mp-tx-mobile__icon ' + iconClass + '">' + iconSvg + '</div>' +
+                '<div class="mp-tx-mobile__body">' +
+                    '<div class="mp-tx-mobile__desc">' + MP.escHtml(desc) + '</div>' +
+                    '<div class="mp-tx-mobile__time">' + MP.escHtml(time) + '</div>' +
+                '</div>' +
+                '<div class="mp-tx-mobile__amount">' +
+                    '<div class="mp-tx-mobile__amount-value ' + amountValClass + '">' + amountPrefix + MP.formatVND(amount) + '</div>' +
+                    (balance != null ? '<div class="mp-tx-mobile__balance">' + MP.formatVND(balance) + '</div>' : '') +
+                '</div>' +
+            '</div>');
+            mobileList.append(item);
         });
     }
 
@@ -829,7 +876,7 @@
                             ' class="mp-qa-bank-logo" />';
                         $container.append($(html));
                     } else {
-                        var html = '<span class="mp-dash-logo-badge" title="' + MP.escHtml(name + ' - ' + masked) + '" style="--badge-color:#10b981">' +
+                        var html = '<span class="mp-dash-logo-badge" title="' + MP.escHtml(name + ' - ' + masked) + '" style="--badge-color:#00687a">' +
                             '<span class="mp-dash-logo-badge__dot"></span>' +
                             '<span class="mp-dash-logo-badge__name">' + MP.escHtml(name) + '</span>' +
                             '</span>';

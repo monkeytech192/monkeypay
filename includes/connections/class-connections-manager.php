@@ -137,8 +137,12 @@ class MonkeyPay_Connections {
             'webhook_url'         => $row['webhook_url'],
             'secret_key'          => $row['secret_key'],
             'events'              => json_decode( $row['events'] ?? '[]', true ) ?: [],
-            'card_template'       => $row['card_template'],
-            'card_template_debit' => $row['card_template_debit'],
+            'card_template'       => ! empty( $row['card_template'] )
+                                        ? json_decode( $row['card_template'], true )
+                                        : null,
+            'card_template_debit' => ! empty( $row['card_template_debit'] )
+                                        ? json_decode( $row['card_template_debit'], true )
+                                        : null,
             'enabled'             => (bool) $row['enabled'],
             'created_at'          => $row['created_at'],
             'updated_at'          => $row['updated_at'],
@@ -208,6 +212,14 @@ class MonkeyPay_Connections {
         global $wpdb;
         $table = $this->table();
 
+        // Serialize JSON fields for DB storage
+        $card_tpl_db       = is_array( $connection['card_template'] )
+                                ? wp_json_encode( $connection['card_template'] )
+                                : $connection['card_template'];
+        $card_tpl_debit_db = is_array( $connection['card_template_debit'] )
+                                ? wp_json_encode( $connection['card_template_debit'] )
+                                : $connection['card_template_debit'];
+
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery
         $wpdb->insert(
             $table,
@@ -218,8 +230,8 @@ class MonkeyPay_Connections {
                 'webhook_url'         => $connection['webhook_url'],
                 'secret_key'          => $connection['secret_key'],
                 'events'              => wp_json_encode( $connection['events'] ),
-                'card_template'       => $connection['card_template'],
-                'card_template_debit' => $connection['card_template_debit'],
+                'card_template'       => $card_tpl_db,
+                'card_template_debit' => $card_tpl_debit_db,
                 'enabled'             => (int) $connection['enabled'],
                 'created_at'          => $connection['created_at'],
                 'updated_at'          => $connection['updated_at'],
@@ -250,8 +262,8 @@ class MonkeyPay_Connections {
         if ( isset( $data['webhook_url'] ) ) { $update['webhook_url'] = esc_url_raw( $data['webhook_url'] ); $formats[] = '%s'; }
         if ( isset( $data['secret_key'] ) )  { $update['secret_key'] = sanitize_text_field( $data['secret_key'] ); $formats[] = '%s'; }
         if ( isset( $data['events'] ) )      { $update['events']     = wp_json_encode( $this->sanitize_events( $data['events'] ) ); $formats[] = '%s'; }
-        if ( array_key_exists( 'card_template', $data ) )       { $update['card_template']       = $data['card_template']; $formats[] = '%s'; }
-        if ( array_key_exists( 'card_template_debit', $data ) ) { $update['card_template_debit'] = $data['card_template_debit']; $formats[] = '%s'; }
+        if ( array_key_exists( 'card_template', $data ) )       { $update['card_template']       = is_array( $data['card_template'] ) ? wp_json_encode( $data['card_template'] ) : $data['card_template']; $formats[] = '%s'; }
+        if ( array_key_exists( 'card_template_debit', $data ) ) { $update['card_template_debit'] = is_array( $data['card_template_debit'] ) ? wp_json_encode( $data['card_template_debit'] ) : $data['card_template_debit']; $formats[] = '%s'; }
         if ( isset( $data['enabled'] ) )     { $update['enabled']    = (int) (bool) $data['enabled']; $formats[] = '%d'; }
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery

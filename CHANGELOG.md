@@ -5,6 +5,26 @@ All notable changes to MonkeyPay will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.1] - 2026-03-24
+
+### Changed
+- **Dashboard UI Overhaul**: Redesigned dashboard with modern card layouts, cash flow chart, and compact account/transaction summary
+  - Three-column top section: account info, transaction cards (in/out/total), connection flow
+  - Column + line chart for cash flow visualization over time
+  - Pill-shaped time range selector (Today, 7d, 30d, This Week, This Month, Custom Range)
+  - Modern credit card-style account info cards
+  - Recent transactions table with friendly date/time format (dd/mm/yy hh:mm:ss)
+- **Bottom Navigation**: Rounded corner active state, mobile/tablet responsive quick display settings
+- **Dark Theme**: Enhanced dark mode support across all dashboard components
+- **i18n**: Expanded bilingual (Vietnamese/English) coverage for dashboard elements
+
+### Fixed
+- **Gateway Config Protection**: Prevent `note_prefix` and `note_syntax` gateway settings from being overwritten by server defaults during sync — user-configured values are now preserved
+- **Primary Color Consistency**: Unified teal (#00687a) primary color usage across all components
+- **Display Settings Visibility**: Quick settings (dark theme, language) now visible on mobile and tablet views
+
+---
+
 ## [3.4.0] - 2025-03-23
 
 ### Added

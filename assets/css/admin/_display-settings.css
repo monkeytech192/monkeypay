@@ -59,12 +59,12 @@
 }
 
 .monkeypay-select:hover {
-    border-color: var(--mp-primary, #10b981);
+    border-color: var(--mp-primary, #00687a);
 }
 
 .monkeypay-select:focus {
-    border-color: var(--mp-primary, #10b981);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    border-color: var(--mp-primary, #00687a);
+    box-shadow: 0 0 0 3px rgba(0, 104, 122, 0.15);
 }
 
 /* ═══ Dashboard Quick Settings ═══════════════════ */
@@ -139,7 +139,7 @@
     width: 36px;
     height: 32px;
     border-radius: 999px;
-    background: var(--mp-primary, #10b981);
+    background: var(--mp-primary, #00687a);
     opacity: 0.18;
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
@@ -340,6 +340,41 @@
     color: var(--mp-text-secondary);
 }
 
+/* Dark mode — mobile transaction list */
+[data-mp-theme="dark"] .mp-tx-mobile-item {
+    border-bottom-color: var(--mp-border-color);
+}
+
+[data-mp-theme="dark"] .mp-tx-mobile__desc {
+    color: var(--mp-text-primary);
+}
+
+[data-mp-theme="dark"] .mp-tx-mobile__time {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-tx-mobile__balance {
+    color: var(--mp-text-secondary);
+}
+
+[data-mp-theme="dark"] .mp-tx-mobile__icon--credit {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+}
+
+[data-mp-theme="dark"] .mp-tx-mobile__icon--debit {
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+}
+
+[data-mp-theme="dark"] .mp-tx-mobile__amount-value--credit {
+    color: #34d399;
+}
+
+[data-mp-theme="dark"] .mp-tx-mobile__amount-value--debit {
+    color: #f87171;
+}
+
 /* Dark mode — page header */
 [data-mp-theme="dark"] .monkeypay-page-title {
     color: var(--mp-text-primary);
@@ -411,21 +446,21 @@
 }
 
 .mp-settings-pill:hover {
-    border-color: rgba(16, 185, 129, 0.4);
-    background: rgba(16, 185, 129, 0.04);
+    border-color: rgba(0, 104, 122, 0.4);
+    background: rgba(0, 104, 122, 0.04);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .mp-settings-pill--active {
-    border-color: var(--mp-primary, #10b981);
-    background: rgba(16, 185, 129, 0.08);
-    color: #047857;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    border-color: var(--mp-primary, #00687a);
+    background: rgba(0, 104, 122, 0.08);
+    color: #004e5c;
+    box-shadow: 0 0 0 3px rgba(0, 104, 122, 0.1);
 }
 
 .mp-settings-pill--active:hover {
-    background: rgba(16, 185, 129, 0.12);
+    background: rgba(0, 104, 122, 0.12);
 }
 
 .mp-settings-pill__icon {
@@ -455,18 +490,18 @@
 
 [data-mp-theme="dark"] .mp-settings-pill:hover {
     border-color: rgba(16, 185, 129, 0.35);
-    background: rgba(16, 185, 129, 0.08);
+    background: rgba(0, 104, 122, 0.08);
 }
 
 [data-mp-theme="dark"] .mp-settings-pill--active {
-    border-color: var(--mp-primary, #10b981);
-    background: rgba(16, 185, 129, 0.12);
+    border-color: var(--mp-primary, #00687a);
+    background: rgba(0, 104, 122, 0.12);
     color: #6ee7b7;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+    box-shadow: 0 0 0 3px rgba(0, 104, 122, 0.08);
 }
 
 [data-mp-theme="dark"] .mp-settings-pill--active:hover {
-    background: rgba(16, 185, 129, 0.18);
+    background: rgba(0, 104, 122, 0.18);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -498,18 +533,18 @@
 }
 
 .mp-tz-dropdown__trigger:hover {
-    border-color: var(--mp-primary, #10b981);
+    border-color: var(--mp-primary, #00687a);
 }
 
 .mp-tz-dropdown__trigger:focus,
 .mp-tz-dropdown.mp-tz-dropdown--open .mp-tz-dropdown__trigger {
-    border-color: var(--mp-primary, #10b981);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    border-color: var(--mp-primary, #00687a);
+    box-shadow: 0 0 0 3px rgba(0, 104, 122, 0.15);
 }
 
 .mp-tz-dropdown__trigger svg:first-child {
     flex-shrink: 0;
-    color: var(--mp-primary, #10b981);
+    color: var(--mp-primary, #00687a);
 }
 
 .mp-tz-dropdown__value {
@@ -593,12 +628,12 @@
 }
 
 .mp-tz-dropdown__option:hover {
-    background: rgba(16, 185, 129, 0.08);
+    background: rgba(0, 104, 122, 0.08);
 }
 
 .mp-tz-dropdown__option--active {
-    background: rgba(16, 185, 129, 0.12);
-    color: var(--mp-primary, #10b981);
+    background: rgba(0, 104, 122, 0.12);
+    color: var(--mp-primary, #00687a);
     font-weight: 600;
 }
 
@@ -633,7 +668,7 @@
 }
 
 [data-mp-theme="dark"] .mp-tz-dropdown__option--active {
-    background: rgba(16, 185, 129, 0.15);
+    background: rgba(0, 104, 122, 0.15);
     color: #6ee7b7;
 }
 
@@ -643,7 +678,8 @@
     }
 
     .mp-quick-display__row {
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: flex-start;
     }
 
     .mp-settings-pills {

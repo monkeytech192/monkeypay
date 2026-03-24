@@ -263,23 +263,66 @@ class MonkeyPay {
             return;
         }
 
-        $base_url = MONKEYPAY_PLUGIN_URL . 'assets/';
-        $version  = MONKEYPAY_VERSION;
+        $base_url  = MONKEYPAY_PLUGIN_URL . 'assets/';
+        $base_path = MONKEYPAY_PLUGIN_DIR . 'assets/';
 
-        // ── CSS ──
-        wp_enqueue_style(
-            'monkeypay-admin',
-            $base_url . 'css/admin.css',
-            [],
-            $version
-        );
+        // ── CSS — Individual partials (avoid @import caching issues) ──
+        $css_partials = [
+            // 1. Design Tokens
+            'tokens'           => 'admin/_tokens.css',
+            // 2. Base Layout
+            'layout'           => 'admin/_layout.css',
+            // 3. Shared Components
+            'cards'            => 'admin/_cards.css',
+            'stats'            => 'admin/_stats.css',
+            'forms'            => 'admin/_forms.css',
+            'toggles'          => 'admin/_toggles.css',
+            'buttons'          => 'admin/_buttons.css',
+            'integrations'     => 'admin/_integrations.css',
+            'toast'            => 'admin/_toast.css',
+            'spinner'          => 'admin/_spinner.css',
+            'info-box'         => 'admin/_info-box.css',
+            // 4. Header & Navigation
+            'header-nav'       => 'admin/_header-nav.css',
+            // 5. Page-Specific
+            'onboarding'       => 'admin/_onboarding.css',
+            'pricing'          => 'admin/_pricing.css',
+            'dashboard'        => 'admin/_dashboard.css',
+            'connections'      => 'admin/_connections.css',
+            'api-keys'         => 'admin/_api-keys.css',
+            'api-docs'         => 'admin/_api-docs.css',
+            'transactions'     => 'admin/_transactions.css',
+            // 6. Overlays
+            'modals'           => 'admin/_modals.css',
+            'card-builder'     => 'admin/_card-builder.css',
+            // 7. Display Settings
+            'display-settings' => 'admin/_display-settings.css',
+            // 8. Dark Theme
+            'dark-theme'       => 'admin/_dark-theme.css',
+        ];
+
+        $prev_handle = [];
+        foreach ( $css_partials as $slug => $file ) {
+            $handle = 'monkeypay-' . $slug;
+            wp_enqueue_style(
+                $handle,
+                $base_url . 'css/' . $file,
+                $prev_handle,
+                $this->asset_version( $base_path . 'css/' . $file )
+            );
+            $prev_handle = [ $handle ];
+        }
+
+        // Alias for scripts that depend on 'monkeypay-admin' style
+        wp_register_style( 'monkeypay-admin', false, [ 'monkeypay-dark-theme' ] );
+        wp_enqueue_style( 'monkeypay-admin' );
 
         // ── JS — Bootstrap dispatcher ──
         wp_enqueue_script(
             'monkeypay-admin',
             $base_url . 'js/admin.js',
             [ 'jquery' ],
-            $version,
+            $this->asset_version( $base_path . 'js/admin.js' ),
             true
         );
 
@@ -308,7 +351,7 @@ class MonkeyPay {
             'monkeypay-i18n',
             $base_url . 'js/admin/i18n.js',
             [ 'monkeypay-admin' ],
-            $version,
+            $this->asset_version( $base_path . 'js/admin/i18n.js' ),
             true
         );
 
@@ -317,7 +360,7 @@ class MonkeyPay {
             'monkeypay-utils',
             $base_url . 'js/admin/utils.js',
             [ 'jquery', 'monkeypay-admin', 'monkeypay-i18n' ],
-            $version,
+            $this->asset_version( $base_path . 'js/admin/utils.js' ),
             true
         );
 
@@ -331,7 +374,7 @@ class MonkeyPay {
                 'monkeypay-onboarding',
                 $base_url . 'js/admin/onboarding.js',
                 [ 'jquery', 'monkeypay-admin', 'monkeypay-utils' ],
-                $version,
+                $this->asset_version( $base_path . 'js/admin/onboarding.js' ),
                 true
             );
         } else {
@@ -357,7 +400,7 @@ class MonkeyPay {
                     'monkeypay-' . $handle,
                     $base_url . 'js/admin/' . $file,
                     $deps,
-                    $version,
+                    $this->asset_version( $base_path . 'js/admin/' . $file ),
                     true
                 );
             }
@@ -415,14 +458,14 @@ class MonkeyPay {
             'monkeypay-payment',
             MONKEYPAY_PLUGIN_URL . 'assets/css/payment.css',
             [],
-            MONKEYPAY_VERSION
+            $this->asset_version( MONKEYPAY_PLUGIN_DIR . 'assets/css/payment.css' )
         );
 
         wp_enqueue_script(
             'monkeypay-payment',
             MONKEYPAY_PLUGIN_URL . 'assets/js/payment.js',
             [ 'jquery' ],
-            MONKEYPAY_VERSION,
+            $this->asset_version( MONKEYPAY_PLUGIN_DIR . 'assets/js/payment.js' ),
             true
         );
 
@@ -515,5 +558,19 @@ class MonkeyPay {
         }
 
         return $transient;
+    }
+
+    /**
+     * Generate cache-busting version string for an asset file.
+     *
+     * Appends the file modification timestamp to the plugin version,
+     * so browsers automatically fetch the latest CSS/JS when files change.
+     *
+     * @param  string $file_path Absolute path to the asset file.
+     * @return string Version string e.g. "3.4.0.1711187602".
+     */
+    private function asset_version( $file_path ) {
+        $mtime = file_exists( $file_path ) ? filemtime( $file_path ) : 0;
+        return MONKEYPAY_VERSION . '.' . $mtime;
     }
 }

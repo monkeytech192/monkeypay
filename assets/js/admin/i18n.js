@@ -63,6 +63,9 @@ window.MonkeyPay = window.MonkeyPay || {};
             'nav_dashboard':              'Dashboard',
             'nav_integrations':           'Tích Hợp',
             'nav_connections':            'Kết Nối',
+            'nav_overview':               'Tổng quan',
+            'nav_transactions':           'Giao dịch',
+            'nav_apikeys':                'API Keys',
             'nav_gateways':               'Cổng Thanh Toán',
             'nav_account':                'Tài Khoản',
             'nav_settings':               'Cài Đặt',
@@ -113,6 +116,11 @@ window.MonkeyPay = window.MonkeyPay || {};
             'col_desc':                   'Mô tả',
             'col_amount':                 'Số tiền',
             'col_balance':                'Số dư',
+
+            // Transaction status
+            'status_pending':             'Đang xử lý',
+            'status_failed':              'Thất bại',
+            'status_success':             'Thành công',
 
             // Modals
             'create_api_key':             'Tạo API Key mới',
@@ -232,6 +240,9 @@ window.MonkeyPay = window.MonkeyPay || {};
             'nav_dashboard':              'Dashboard',
             'nav_integrations':           'Integrations',
             'nav_connections':            'Connections',
+            'nav_overview':               'Overview',
+            'nav_transactions':           'Transactions',
+            'nav_apikeys':                'API Keys',
             'nav_gateways':               'Payment Gateways',
             'nav_account':                'Account',
             'nav_settings':               'Settings',
@@ -278,6 +289,11 @@ window.MonkeyPay = window.MonkeyPay || {};
             'col_desc':                   'Description',
             'col_amount':                 'Amount',
             'col_balance':                'Balance',
+
+            // Transaction status
+            'status_pending':             'Pending',
+            'status_failed':              'Failed',
+            'status_success':             'Success',
 
             'create_api_key':             'Create New API Key',
             'modal_create_key':           'Create New API Key',

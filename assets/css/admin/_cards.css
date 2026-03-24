@@ -1,14 +1,15 @@
 /* ═══════════════════════════════════════════════════
-   Cards
+   Cards — Stitch Design System
    ═══════════════════════════════════════════════════ */
 .monkeypay-card {
     margin-bottom: var(--mp-space-5);
     padding: var(--mp-space-6);
     background: var(--mp-bg-card);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--mp-border);
     border-radius: var(--mp-radius-xl);
-    box-shadow: var(--mp-shadow-sm);
+    box-shadow: var(--mp-shadow-glass, var(--mp-shadow-sm));
     transition: var(--mp-transition);
 }
 
@@ -37,8 +38,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(34, 211, 238, 0.05));
-    border: 1px solid rgba(6, 182, 212, 0.15);
+    background: linear-gradient(135deg, rgba(0, 104, 122, 0.08), rgba(6, 182, 212, 0.05));
+    border: 1px solid rgba(0, 104, 122, 0.15);
     border-radius: var(--mp-radius-md);
 }
 
